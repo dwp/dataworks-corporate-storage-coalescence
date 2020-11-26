@@ -1,0 +1,31 @@
+version: "3.3"
+
+services:
+
+  localstack:
+    image: localstack/localstack:latest
+    ports:
+      - 4566:4566
+    container_name: localstack
+    environment:
+      - SERVICES=s3
+
+  localstack-init:
+    image: localstack-init
+    build:
+      context: containers/localstack
+    container_name: localstack-init
+    depends_on:
+      - localstack
+
+  coalescer:
+    image: coalescer
+    build:
+      context: coalescer
+    container_name: coalescer
+
+  integration-tests:
+    image: integration-tests
+    build:
+      context: containers/integration
+    container_name: integration-tests
