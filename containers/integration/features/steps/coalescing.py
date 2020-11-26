@@ -1,17 +1,18 @@
 import gzip
-import json
 
-from behave import *
+from behave import given, then, step
 import boto3
 
 
 @given("s3 has been populated")
 def step_impl(context):
+    # Step already performed.
     pass
 
 
 @step("coalescing has been run")
 def step_impl(context):
+    # Step already performed.
     pass
 
 
@@ -29,22 +30,18 @@ def step_impl(context, num_files: int, bucket: str, prefix: str):
 @step("there will be {num_records} records therein")
 def step_impl(context, num_records):
     objects = []
-    for object in context.contents:
-        objects.append(context.client.get_object(Bucket=context.bucket, Key=object['Key']))
+    for obj in context.contents:
+        objects.append(context.client.get_object(Bucket=context.bucket, Key=obj['Key']))
 
     accumulated = None
-    for object in objects:
-        contents = object_contents(object)
+    for obj in objects:
+        contents = object_contents(obj)
         accumulated = accumulated + contents if accumulated else contents
 
     uncompressed = gzip.decompress(accumulated).decode()
     lines = uncompressed.split("\n")
     non_empty = [line for line in lines if len(line) > 0]
     assert len(non_empty) == int(num_records)
-    # for line in lines[0:100]:
-    #     j = json.loads(line)
-    #     print(j)
-
 
 
 def object_contents(s3_object: dict) -> bytes:
