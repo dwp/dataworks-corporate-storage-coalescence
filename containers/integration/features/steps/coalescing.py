@@ -1,0 +1,66 @@
+import gzip
+import json
+
+from behave import *
+import boto3
+
+
+@given("s3 has been populated")
+def step_impl(context):
+    pass
+
+
+@step("coalescing has been run")
+def step_impl(context):
+    pass
+
+
+@then("there will be {num_files} files under {bucket} {prefix}")
+def step_impl(context, num_files: int, bucket: str, prefix: str):
+    client = s3_client()
+    results = client.list_objects_v2(Bucket=bucket, Prefix=prefix)
+    contents = results['Contents']
+    assert int(num_files) == len(contents)
+    context.contents = contents
+    context.client = client
+    context.bucket = bucket
+
+
+@step("there will be {num_records} records therein")
+def step_impl(context, num_records):
+    objects = []
+    for object in context.contents:
+        objects.append(context.client.get_object(Bucket=context.bucket, Key=object['Key']))
+
+    accumulated = None
+    for object in objects:
+        contents = object_contents(object)
+        accumulated = accumulated + contents if accumulated else contents
+
+    uncompressed = gzip.decompress(accumulated).decode()
+    lines = uncompressed.split("\n")
+    non_empty = [line for line in lines if len(line) > 0]
+    assert len(non_empty) == int(num_records)
+    # for line in lines[0:100]:
+    #     j = json.loads(line)
+    #     print(j)
+
+
+
+def object_contents(s3_object: dict) -> bytes:
+    stream = s3_object['Body']
+    try:
+        contents = None
+        for chunk in stream.iter_chunks():
+            contents = chunk if not contents else contents + chunk
+        return contents
+    finally:
+        stream.close()
+
+
+def s3_client():
+    return boto3.client(service_name="s3",
+                        endpoint_url="http://localstack:4566",
+                        use_ssl=False,
+                        aws_access_key_id="ACCESS_KEY",
+                        aws_secret_access_key="SECRET_KEY")

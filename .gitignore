@@ -1,0 +1,6 @@
+venv/
+.idea/
+*.pyc
+build/
+dist/
+dataworks_corporate_data_coalescence.egg-info
