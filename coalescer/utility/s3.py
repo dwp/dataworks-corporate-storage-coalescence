@@ -19,13 +19,15 @@ class S3:
     def object_summaries(self, bucket: str, prefix: str):
         objects = []
         all_retrieved = False
-        token = ""
+        token = None
 
         while not all_retrieved:
             results = \
                 self.client.list_objects_v2(Bucket=bucket,
                                             Prefix=prefix,
-                                            ContinuationToken=token)
+                                            ContinuationToken=token) \
+                    if token else self.client.list_objects_v2(Bucket=bucket,
+                                                              Prefix=prefix)
             truncated = results['IsTruncated'] \
                 if 'IsTruncated' in results \
                 else False
