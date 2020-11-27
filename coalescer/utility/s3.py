@@ -19,13 +19,14 @@ class S3:
     def object_summaries(self, bucket: str, prefix: str):
         objects = []
         all_retrieved = False
-        token = ""
+        token = None
 
         while not all_retrieved:
             results = \
                 self.client.list_objects_v2(Bucket=bucket,
                                             Prefix=prefix,
-                                            ContinuationToken=token)
+                                            ContinuationToken=token) if token else self.client.list_objects_v2(Bucket=bucket, Prefix=prefix)
+
             truncated = results['IsTruncated'] \
                 if 'IsTruncated' in results \
                 else False
@@ -64,8 +65,7 @@ class S3:
                 deletes = [{'Key': item['object_key']} for item in batch]
                 objects = {'Objects': deletes}
                 self.client.delete_objects(Bucket=bucket, Delete=objects)
-                [print(f"Deleted batch item {item['object_key']}")
-                 for item in batch]
+                print(f"Deleted batch of {len(batch)} items")
             else:
                 sub_batches = [batch[i:i + self.MAX_DELETE_BATCH_SIZE]
                                for i in range(0, len(batch),
