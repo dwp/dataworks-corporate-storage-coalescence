@@ -27,7 +27,7 @@ jobs:
 
   publish-github-release:
     runs-on: ubuntu-latest
-    needs: [get-publish-version, publish-docker]
+    needs: get-publish-version
     steps:
       - name: Checkout code
         uses: actions/checkout@master
@@ -44,7 +44,6 @@ jobs:
 
   snyk-monitor:
     runs-on: ubuntu-latest
-    needs: publish-docker
     steps:
       - uses: actions/checkout@v2
       - name: Run Snyk monitoring
