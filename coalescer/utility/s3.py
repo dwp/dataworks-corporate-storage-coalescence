@@ -25,9 +25,8 @@ class S3:
             results = \
                 self.client.list_objects_v2(Bucket=bucket,
                                             Prefix=prefix,
-                                            ContinuationToken=token) \
-                    if token else self.client.list_objects_v2(Bucket=bucket,
-                                                              Prefix=prefix)
+                                            ContinuationToken=token) if token else self.client.list_objects_v2(Bucket=bucket, Prefix=prefix)
+
             truncated = results['IsTruncated'] \
                 if 'IsTruncated' in results \
                 else False
