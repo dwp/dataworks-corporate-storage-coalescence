@@ -2,7 +2,7 @@
 
 import argparse
 import sys
-from concurrent.futures import ThreadPoolExecutor, wait, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from botocore.exceptions import ClientError
 
@@ -19,8 +19,8 @@ def main():
     summaries = s3.object_summaries(args.bucket, args.prefix)
     grouped = grouped_object_summaries(summaries)
     batched = batched_object_summaries(args.size, args.files, grouped)
-    for topic in batched.keys():
-        coalesce_topic(s3, args.bucket, batched[topic], args.threads)
+    [coalesce_topic(s3, args.bucket, batched[topic], args.threads)
+     for topic in batched.keys()]
 
 
 def coalesce_topic(s3, bucket: str, batched_topic, threads: int):
