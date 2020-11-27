@@ -2,8 +2,9 @@
 
 import argparse
 import sys
+from concurrent.futures import ThreadPoolExecutor, wait, as_completed
 
-import botocore
+from botocore.exceptions import ClientError
 
 from utility.batching import batched_object_summaries
 from utility.grouping import grouped_object_summaries
@@ -18,12 +19,14 @@ def main():
     summaries = s3.object_summaries(args.bucket, args.prefix)
     grouped = grouped_object_summaries(summaries)
     batched = batched_object_summaries(args.size, args.files, grouped)
-    [coalesce_topic(s3, args.bucket, batched[topic])
-     for topic in batched.keys()]
+    for topic in batched.keys():
+        coalesce_topic(s3, args.bucket, batched[topic], args.threads)
 
 
-def coalesce_topic(s3, bucket, topic):
-    [coalesce_partition(s3, bucket, topic[partition]) for partition in topic]
+def coalesce_topic(s3, bucket: str, batched_topic, threads: int):
+    with (ThreadPoolExecutor(max_workers=threads)) as executor:
+        return as_completed([executor.submit(coalesce_partition, s3, bucket, batched_topic[partition])
+                             for partition in batched_topic])
 
 
 def coalesce_partition(s3, bucket, partition):
@@ -34,7 +37,7 @@ def coalesce_batch(s3, bucket, batch):
     try:
         s3.coalesce_batch(bucket, batch)
         s3.delete_batch(bucket, batch)
-    except botocore.exceptions.ClientError as error:
+    except ClientError as error:
         print(f"Error coalescing batch: {error}", file=sys.stderr)
         [print(f"Failed to coalesce object: {obj}", file=sys.stderr)
          for obj in batch]
@@ -63,6 +66,12 @@ def command_line_args():
                                 "ucfs_audit/2020/11/05/data/businessAudit",
                         type=str,
                         help='The common prefix.')
+
+    parser.add_argument('-t', '--threads',
+                        default=1,
+                        choices=range(1, 11),
+                        type=int,
+                        help='The number of coalescing threads to run in parallel.')
 
     return parser.parse_args()
 
