@@ -28,6 +28,7 @@ localstack: ## bring up localstack container and wait for it to be ready
 
 services: localstack
 
+.PHONY: coalescer
 coalescer:
 	docker-compose up coalescer
 

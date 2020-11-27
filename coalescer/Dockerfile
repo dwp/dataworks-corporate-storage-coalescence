@@ -9,4 +9,4 @@ COPY requirements.txt ./
 RUN pip install -r ./requirements.txt
 RUN chmod +x ./main.py
 RUN pwd && ls
-ENTRYPOINT ["./main.py", "-l"]
+ENTRYPOINT ["./main.py", "-l", "-t3"]
