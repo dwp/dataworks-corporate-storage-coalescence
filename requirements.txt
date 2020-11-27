@@ -1,2 +1,5 @@
-boto3
+boto3~=1.16.25
 tox
+botocore~=1.19.25
+setuptools~=50.3.2
+behave~=1.2.6
