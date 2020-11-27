@@ -1,5 +1,4 @@
 import re
-from typing import Final
 
 import boto3
 
@@ -95,4 +94,4 @@ class S3:
         finally:
             stream.close()
 
-    MAX_DELETE_BATCH_SIZE: Final = 1_000
+    MAX_DELETE_BATCH_SIZE = 1_000
