@@ -1,8 +1,36 @@
 import unittest
-from utility.grouping import grouped_object_summaries
+from utility.grouping import batched_object_summaries, grouped_object_summaries
 
 
 class GroupingSpec(unittest.TestCase):
+    def test_batching(self):
+        topics = ["data.businessAudit", "db.database.collection"]
+        partition_keys = range(9)
+        record_range = range(500)
+        grouped = {}
+        expected_total = 0
+        for topic in topics:
+            grouped[topic] = {}
+            for partition in partition_keys:
+                grouped[topic][partition] = []
+                for record in record_range:
+                    expected_total += 1
+                    grouped[topic][partition].append(self.__item(topic, partition, record))
+
+        batches = batched_object_summaries(100_000, 5, grouped)
+        self.assertEqual(topics, list(batches.keys()))
+        actual_total = 0
+        for batch in batches.keys():
+            partitions = batches[batch]
+            self.assertEqual(list(partition_keys), list(partitions.keys()))
+            for partition_batch_key in partitions.keys():
+                partition_batch = partitions[partition_batch_key]
+                self.assertEqual(100, len(partition_batch))
+                for sub_batch in partition_batch:
+                    actual_total += len(sub_batch)
+                    self.assertEqual(5, len(sub_batch))
+        self.assertEqual(expected_total, actual_total)
+
     def test_grouping(self):
         object_summaries = []
         for collection in ["collection1", "collection2"]:
@@ -31,6 +59,17 @@ class GroupingSpec(unittest.TestCase):
         return {
             "Key": f"corporate_storage/ucfs_audit/2020/11/05/database/{collection}/db.database.{collection}_{partition}_{i * 100}-{i * 100 + 99}.jsonl.gz",
             "Size": 100
+        }
+
+    @staticmethod
+    def __item(topic: str, partition: int, record: int) -> dict:
+        return {
+            "object_key": f"corporate_storage/ucfs_audit/2020/11/05/data/businessAudit/{topic}_{partition}_{record * 100}-{record * 100 + 99}.jsonl.gz",
+            "topic": topic,
+            "partition": partition,
+            "start_offset": record * 100,
+            "end_offset": record * 100 + 99,
+            "size": 10_000
         }
 
 

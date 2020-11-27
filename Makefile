@@ -45,3 +45,7 @@ s3-clear:
 
 s3-list:
 	awslocal s3 ls --recursive s3://corporate-data
+
+clean:
+	rm -rf dist build coalescer/dataworks_corporate_data_coalescence.egg-info .tox
+	find . -type d -name __pycache__ | xargs -r rm -vrf

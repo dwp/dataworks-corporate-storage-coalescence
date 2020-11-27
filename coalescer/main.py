@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from botocore.exceptions import ClientError
 
-from utility.batching import batched_object_summaries
+from utility.grouping import batched_object_summaries
 from utility.grouping import grouped_object_summaries
 from utility.s3 import S3, s3_client
 
