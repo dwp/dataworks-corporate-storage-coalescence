@@ -35,8 +35,9 @@ def coalesce_partition(s3, bucket, partition):
 
 def coalesce_batch(s3, bucket, batch):
     try:
-        s3.coalesce_batch(bucket, batch)
-        s3.delete_batch(bucket, batch)
+        if len(batch) > 1:
+            s3.coalesce_batch(bucket, batch)
+            s3.delete_batch(bucket, batch)
     except ClientError as error:
         print(f"Error coalescing batch: {error}", file=sys.stderr)
         [print(f"Failed to coalesce object: {obj}", file=sys.stderr)
