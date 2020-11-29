@@ -1,8 +1,25 @@
 import unittest
-from utility.grouping import batched_object_summaries, grouped_object_summaries
+from asyncio import Future
+
+from utility.grouping import batched_object_summaries, grouped_object_summaries, successful_result
 
 
 class GroupingSpec(unittest.TestCase):
+
+    def test_successful_resolved_results(self):
+        self.assertEqual(True, successful_result(self.__generators()))
+
+    def test_failed_resolved_results(self):
+        self.assertEqual(False, successful_result(self.__generators(with_failure=True)))
+
+    @staticmethod
+    def __future(has_failure=False):
+        future = Future()
+        result = [True] * 10
+        result[5] = False if has_failure else True
+        future.set_result(result)
+        return future
+
     def test_batching(self):
         topics = ["data.businessAudit", "db.database.collection"]
         partition_keys = range(9)
@@ -55,7 +72,7 @@ class GroupingSpec(unittest.TestCase):
                         item['object_key'])
 
     @staticmethod
-    def __object_summary(collection: str, partition: str, i: int) -> dict:
+    def __object_summary(collection: str, partition: int, i: int) -> dict:
         return {
             "Key": f"corporate_storage/ucfs_audit/2020/11/05/database/{collection}/db.database.{collection}_{partition}_{i * 100}-{i * 100 + 99}.jsonl.gz",
             "Size": 100
@@ -71,6 +88,13 @@ class GroupingSpec(unittest.TestCase):
             "end_offset": record * 100 + 99,
             "size": 10_000
         }
+
+    def __generators(self, with_failure=False):
+        return [self.__generator(with_failure=with_failure) for _ in range(2)]
+
+    def __generator(self, with_failure=False):
+        for _ in range(10):
+            yield self.__future(with_failure)
 
 
 if __name__ == '__main__':
