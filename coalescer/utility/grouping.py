@@ -58,3 +58,10 @@ def batched_object_summaries(max_size: int,
                 batches[topic][partition].append(current_batch)
 
     return batches
+
+
+def successful_result(results):
+    failures = []
+    for futures in results:
+        failures = [any(x is False for x in future.result()) for future in futures]
+    return not(any(x is True for x in failures))

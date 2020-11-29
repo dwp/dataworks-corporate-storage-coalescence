@@ -6,8 +6,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from botocore.exceptions import ClientError
 
-from utility.grouping import batched_object_summaries
-from utility.grouping import grouped_object_summaries
+from utility.grouping import batched_object_summaries, grouped_object_summaries, successful_result
 from utility.s3 import S3, s3_client
 
 
@@ -19,8 +18,9 @@ def main():
     summaries = s3.object_summaries(args.bucket, args.prefix)
     grouped = grouped_object_summaries(summaries)
     batched = batched_object_summaries(args.size, args.files, grouped)
-    [coalesce_topic(s3, args.bucket, batched[topic], args.threads)
-     for topic in batched.keys()]
+    results = [coalesce_topic(s3, args.bucket, batched[topic], args.threads)
+               for topic in batched.keys()]
+    exit(0 if successful_result(results) else 5)
 
 
 def coalesce_topic(s3, bucket: str, batched_topic, threads: int):
@@ -30,18 +30,20 @@ def coalesce_topic(s3, bucket: str, batched_topic, threads: int):
 
 
 def coalesce_partition(s3, bucket, partition):
-    [coalesce_batch(s3, bucket, batch) for batch in partition]
+    return [coalesce_batch(s3, bucket, batch) for batch in partition]
 
 
-def coalesce_batch(s3, bucket, batch):
+def coalesce_batch(s3, bucket, batch) -> bool:
     try:
         if len(batch) > 1:
             s3.coalesce_batch(bucket, batch)
             s3.delete_batch(bucket, batch)
+        else:
+            print("Not processing batch of size 1")
+        return True
     except ClientError as error:
-        print(f"Error coalescing batch: {error}", file=sys.stderr)
-        [print(f"Failed to coalesce object: {obj}", file=sys.stderr)
-         for obj in batch]
+        print(f"Error coalescing batch: '{error}'.", file=sys.stderr)
+        return False
 
 
 def command_line_args():
