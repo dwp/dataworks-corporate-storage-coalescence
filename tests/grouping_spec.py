@@ -72,7 +72,7 @@ class GroupingSpec(unittest.TestCase):
                         item['object_key'])
 
     @staticmethod
-    def __object_summary(collection: str, partition: str, i: int) -> dict:
+    def __object_summary(collection: str, partition: int, i: int) -> dict:
         return {
             "Key": f"corporate_storage/ucfs_audit/2020/11/05/database/{collection}/db.database.{collection}_{partition}_{i * 100}-{i * 100 + 99}.jsonl.gz",
             "Size": 100
@@ -93,7 +93,7 @@ class GroupingSpec(unittest.TestCase):
         return [self.__generator(with_failure=with_failure) for _ in range(2)]
 
     def __generator(self, with_failure=False):
-        for partition_number in range(10):
+        for _ in range(10):
             yield self.__future(with_failure)
 
 
