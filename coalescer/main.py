@@ -2,6 +2,7 @@
 
 import argparse
 import sys
+from timeit import default_timer as timer
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from botocore.exceptions import ClientError
@@ -11,6 +12,7 @@ from utility.s3 import S3, s3_client
 
 
 def main():
+    start = timer()
     args = command_line_args()
     client = s3_client(args.localstack)
     s3 = S3(client)
@@ -20,7 +22,9 @@ def main():
     batched = batched_object_summaries(args.size, args.files, grouped)
     results = [coalesce_topic(s3, args.bucket, batched[topic], args.threads)
                for topic in batched.keys()]
-    exit(0 if successful_result(results) else 5)
+    end = timer()
+    print(f"Time taken: {end - start:.2f} seconds.")
+    exit(0 if successful_result(results) else 2)
 
 
 def coalesce_topic(s3, bucket: str, batched_topic, threads: int):
