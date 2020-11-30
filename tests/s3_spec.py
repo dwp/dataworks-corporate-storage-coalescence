@@ -1,6 +1,7 @@
+import io
 import unittest
 from functools import reduce
-from unittest.mock import Mock, MagicMock, call
+from unittest.mock import Mock, MagicMock, call, ANY
 
 from botocore.response import StreamingBody
 
@@ -12,18 +13,13 @@ class S3Spec(unittest.TestCase):
     def test_coalesce(self):
         batch = [self.__batch_item(i) for i in range(1000)]
         objects = [self.__s3_object_with_body(i) for i in range(1000)]
-        contents = [self.__s3_object_contents(i) for i in range(1000)]
-        coalesced = reduce(lambda acc, x: acc + x, contents, "")
         client = s3_client(True)
         client.get_object = Mock(side_effect=objects)
-        client.put_object = Mock()
+        client.upload_fileobj = Mock()
         s3 = S3(client)
         s3.coalesce_batch('bucket', batch)
-        client.put_object.assert_called_once_with(Bucket="bucket",
-                                                  Key="corporate_storage/ucfs_audit/2020/11/05/data/businessAudit/data.businessAudit_2_0_99999.jsonl.gz",
-                                                  Body=coalesced,
-                                                  ContentLength=len(coalesced),
-                                                  ContentType="application/gzip")
+        key = "corporate_storage/ucfs_audit/2020/11/05/data/businessAudit/data.businessAudit_2_0_99999.jsonl.gz"
+        client.upload_fileobj.assert_called_once_with(ANY, "bucket", key)
 
     def test_object_summaries(self):
         client = s3_client(True)
@@ -84,12 +80,13 @@ class S3Spec(unittest.TestCase):
 
     def __s3_object_with_body(self, i: int) -> dict:
         body = StreamingBody(raw_stream=MagicMock(), content_length=100)
-        body.iter_chunks = MagicMock(return_value=self.__s3_object_contents(i))
+        rv = self.__s3_object_contents(i)
+        body.read = MagicMock(return_value=rv)
         return dict(Body=body)
 
     @staticmethod
-    def __s3_object_contents(i: int) -> str:
-        return f"S3 OBJECT CONTENTS {i}\n"
+    def __s3_object_contents(i: int) -> bytes:
+        return f"S3 OBJECT CONTENTS {i}\n".encode()
 
 
 if __name__ == '__main__':
