@@ -1,6 +1,9 @@
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from boto3.s3.transfer import TransferConfig
 
 import boto3
+import io
 
 
 def s3_client(use_localstack: bool):
@@ -25,7 +28,8 @@ class S3:
             results = \
                 self.client.list_objects_v2(Bucket=bucket,
                                             Prefix=prefix,
-                                            ContinuationToken=token) if token else self.client.list_objects_v2(Bucket=bucket, Prefix=prefix)
+                                            ContinuationToken=token) if token else self.client.list_objects_v2(
+                    Bucket=bucket, Prefix=prefix)
 
             truncated = results['IsTruncated'] \
                 if 'IsTruncated' in results \
@@ -51,13 +55,12 @@ class S3:
             prefix = re.compile(r"/[^/]+$").sub("", batch[0]['object_key'])
             coalesced_key = f"{prefix}/{coalesced_filename}"
             coalesced_contents = self.__coalesced(bucket, batch)
-
-            self.client.put_object(Bucket=bucket,
-                                   Key=coalesced_key,
-                                   Body=coalesced_contents,
-                                   ContentLength=len(coalesced_contents),
-                                   ContentType="application/gzip")
+            self.upload(bucket, coalesced_key, coalesced_contents)
             print(f"Put coalesced batch into s3 {coalesced_key}.")
+
+    def upload(self, bucket, key, contents):
+        wtf = lambda x: print(f"Uploading {key}, sent {x}/{len(contents)} bytes.")
+        self.client.upload_fileobj(io.BytesIO(contents), bucket, key, Callback=wtf)
 
     def delete_batch(self, bucket: str, batch: list):
         if len(batch) > 0:
@@ -76,12 +79,23 @@ class S3:
 
     def __coalesced(self, bucket: str, batch: list) -> bytes:
         coalesced = None
-        for item in batch:
-            s3_object = self.client.get_object(Bucket=bucket,
-                                               Key=item["object_key"])
-            contents = self.__object_contents(s3_object)
+        results = [future.result() for future in self.__uncoalesced_objects(bucket, batch)]
+        filename_re = re.compile(r"/[.\w]+_\d+_(\d+)-\d+\.jsonl\.gz$")
+        sorted_contents = [xs[1] for xs in sorted(results, key=lambda x: int(filename_re.findall(x[0])[0]))]
+        for contents in sorted_contents:
             coalesced = contents if not coalesced else coalesced + contents
         return coalesced
+
+    def __uncoalesced_objects(self, bucket, batch):
+        with (ThreadPoolExecutor()) as executor:
+            return as_completed(
+                [executor.submit(self.__uncoalesced_object_contents, bucket, item["object_key"]) for item in
+                 batch])
+
+    def __uncoalesced_object_contents(self, bucket, key):
+        s3_object = self.client.get_object(Bucket=bucket, Key=key)
+        contents = self.__object_contents(s3_object)
+        return key, contents
 
     @staticmethod
     def __object_contents(s3_object: dict) -> bytes:
