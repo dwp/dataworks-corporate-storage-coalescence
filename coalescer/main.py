@@ -3,7 +3,7 @@
 import argparse
 import sys
 from timeit import default_timer as timer
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed, wait
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, wait
 
 from botocore.exceptions import ClientError
 
@@ -22,7 +22,7 @@ def main():
     print(f"Fetch summaries, size {len(summaries)}")
     grouped = grouped_object_summaries(summaries, args.partition)
     batched = batched_object_summaries(args.size, args.files, grouped)
-    print(f"Created batches, coalescing")
+    print("Created batches, coalescing")
     results = [coalesce_topic(args.bucket, batched[topic], args.threads, args.multiprocessor, args.localstack)
                for topic in batched.keys()]
     end = timer()
@@ -35,7 +35,7 @@ def coalesce_topic(bucket: str, batched_topic, threads: int, use_multiprocessor,
         print(f"Executor: {executor}")
         start = timer()
         futures = [executor.submit(coalesce_partition, bucket, batched_topic[partition], use_localstack)
-                             for partition in batched_topic]
+                   for partition in batched_topic]
         for future in futures:
             print(f"Future: {future}")
 
