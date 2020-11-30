@@ -25,6 +25,8 @@ def main():
     print("Created batches, coalescing")
     results = [coalesce_topic(args.bucket, batched[topic], args.threads, args.multiprocessor, args.localstack)
                for topic in batched.keys()]
+    for result in results:
+        print(f"Result: {result}")
     end = timer()
     print(f"Time taken: {end - start:.2f} seconds.")
     exit(0 if successful_result(results) else 2)
