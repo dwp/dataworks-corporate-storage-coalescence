@@ -1,8 +1,9 @@
 import re
+from typing import Optional
 
 
-def grouped_object_summaries(summaries: list) -> dict:
-    filename_re = re.compile(r"/([.\w]+)_(\d+)_(\d+)-(\d+)\.jsonl\.gz$")
+def grouped_object_summaries(summaries: list, partition_number: Optional[int]) -> dict:
+    filename_re = re.compile(filename_pattern(partition_number))
     grouped = {}
     for summary in summaries:
         object_key = summary['Key']
@@ -31,6 +32,11 @@ def grouped_object_summaries(summaries: list) -> dict:
                 sorted(keys, key=lambda x: x['start_offset'])
 
     return grouped
+
+
+def filename_pattern(partition: int):
+    return r"/([.\w]+)_" + f"({partition})" + r"_(\d+)-(\d+)\.jsonl\.gz$" if partition \
+        else r"/([.\w]+)_(\d+)_(\d+)-(\d+)\.jsonl\.gz$"
 
 
 def batched_object_summaries(max_size: int,
@@ -64,4 +70,4 @@ def successful_result(results):
     failures = []
     for futures in results:
         failures = [any(x is False for x in future.result()) for future in futures]
-    return not(any(x is True for x in failures))
+    return not (any(x is True for x in failures))

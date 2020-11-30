@@ -16,9 +16,9 @@ def main():
     args = command_line_args()
     client = s3_client(args.localstack)
     s3 = S3(client)
-    print(f"Bucket: '{args.bucket}', prefix: '{args.prefix}'.")
+    print(f"Bucket: '{args.bucket}', prefix: '{args.prefix}', partition: '{args.partition}'.")
     summaries = s3.object_summaries(args.bucket, args.prefix)
-    grouped = grouped_object_summaries(summaries)
+    grouped = grouped_object_summaries(summaries, args.partition)
     batched = batched_object_summaries(args.size, args.files, grouped)
     results = [coalesce_topic(s3, args.bucket, batched[topic], args.threads)
                for topic in batched.keys()]
@@ -67,6 +67,11 @@ def command_line_args():
     parser.add_argument('-l', '--localstack', default=False,
                         action="store_true",
                         help='Target localstack instance.')
+
+    parser.add_argument('-n', '--partition',
+                        choices=range(0, 19),
+                        type=int,
+                        help='The partition to coalesce.')
 
     parser.add_argument('-p', '--prefix',
                         default="corporate_storage/"

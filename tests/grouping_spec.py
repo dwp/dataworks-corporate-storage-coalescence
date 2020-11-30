@@ -48,28 +48,44 @@ class GroupingSpec(unittest.TestCase):
                     self.assertEqual(5, len(sub_batch))
         self.assertEqual(expected_total, actual_total)
 
-    def test_grouping(self):
+    def test_grouping_all_partitions(self):
+        object_summaries = self.__summaries()
+        result = grouped_object_summaries(object_summaries, None)
+        self.assertEqual(["db.database.collection1", "db.database.collection2"], list(result.keys()))
+        for topic in list(result.keys()):
+            partition_batch = result[topic]
+            self.assertEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], list(partition_batch.keys()))
+            self.__validate_partitions(partition_batch, topic)
+
+    def test_grouping_one_partition(self):
+        object_summaries = self.__summaries()
+        result = grouped_object_summaries(object_summaries, 5)
+        self.assertEqual(["db.database.collection1", "db.database.collection2"], list(result.keys()))
+        for topic in list(result.keys()):
+            partition_batch = result[topic]
+            self.assertEqual([5], list(partition_batch.keys()))
+            self.__validate_partitions(partition_batch, topic)
+
+    def __validate_partitions(self, partition_batch, topic):
+        for partition in list(partition_batch.keys()):
+            items = partition_batch[partition]
+            for item in items:
+                self.assertEqual(topic, item['topic'])
+                self.assertEqual(partition, item['partition'])
+                start_offset = item['start_offset']
+                end_offset = item['end_offset']
+                collection = topic.replace("db.database.", "")
+                self.assertEqual(
+                    f"corporate_storage/ucfs_audit/2020/11/05/database/{collection}/{topic}_{partition}_{start_offset}-{end_offset}.jsonl.gz",
+                    item['object_key'])
+
+    def __summaries(self):
         object_summaries = []
         for collection in ["collection1", "collection2"]:
             for partition in range(10):
                 for i in range(100):
                     object_summaries.append(self.__object_summary(collection, partition, i))
-        result = grouped_object_summaries(object_summaries)
-        self.assertEqual(["db.database.collection1", "db.database.collection2"], list(result.keys()))
-        for topic in list(result.keys()):
-            partition_batch = result[topic]
-            self.assertEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], list(partition_batch.keys()))
-            for partition in list(partition_batch.keys()):
-                items = partition_batch[partition]
-                for item in items:
-                    self.assertEqual(topic, item['topic'])
-                    self.assertEqual(partition, item['partition'])
-                    start_offset = item['start_offset']
-                    end_offset = item['end_offset']
-                    collection = topic.replace("db.database.", "")
-                    self.assertEqual(
-                        f"corporate_storage/ucfs_audit/2020/11/05/database/{collection}/{topic}_{partition}_{start_offset}-{end_offset}.jsonl.gz",
-                        item['object_key'])
+        return object_summaries
 
     @staticmethod
     def __object_summary(collection: str, partition: int, i: int) -> dict:
