@@ -1,6 +1,5 @@
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from boto3.s3.transfer import TransferConfig
 
 import boto3
 import io
@@ -59,8 +58,8 @@ class S3:
             print(f"Put coalesced batch into s3 {coalesced_key}.")
 
     def upload(self, bucket, key, contents):
-        wtf = lambda x: print(f"Uploading {key}, sent {x}/{len(contents)} bytes.")
-        self.client.upload_fileobj(io.BytesIO(contents), bucket, key, Callback=wtf)
+        def progress(x): print(f"Uploading {key}, sent {x}/{len(contents)} bytes.")
+        self.client.upload_fileobj(io.BytesIO(contents), bucket, key, Callback=progress)
 
     def delete_batch(self, bucket: str, batch: list):
         if len(batch) > 0:
