@@ -3,7 +3,7 @@
 import argparse
 import sys
 from timeit import default_timer as timer
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, wait
 
 from botocore.exceptions import ClientError
 
@@ -16,24 +16,45 @@ def main():
     args = command_line_args()
     client = s3_client(args.localstack)
     s3 = S3(client)
-    print(f"Bucket: '{args.bucket}', prefix: '{args.prefix}', partition: '{args.partition}'.")
+    print(f"Bucket: '{args.bucket}', prefix: '{args.prefix}', partition: {args.partition}, "
+          f"threads: {args.threads}, multiprocessor: {args.multiprocessor}.")
     summaries = s3.object_summaries(args.bucket, args.prefix)
+    print(f"Fetch summaries, size {len(summaries)}")
     grouped = grouped_object_summaries(summaries, args.partition)
     batched = batched_object_summaries(args.size, args.files, grouped)
-    results = [coalesce_topic(s3, args.bucket, batched[topic], args.threads)
+    print("Created batches, coalescing")
+    results = [coalesce_topic(args.bucket, batched[topic], args.threads, args.multiprocessor, args.localstack)
                for topic in batched.keys()]
+    for result in results:
+        print(f"Result: {result}")
     end = timer()
     print(f"Time taken: {end - start:.2f} seconds.")
     exit(0 if successful_result(results) else 2)
 
 
-def coalesce_topic(s3, bucket: str, batched_topic, threads: int):
-    with (ThreadPoolExecutor(max_workers=threads)) as executor:
-        return as_completed([executor.submit(coalesce_partition, s3, bucket, batched_topic[partition])
-                             for partition in batched_topic])
+def coalesce_topic(bucket: str, batched_topic, threads: int, use_multiprocessor, use_localstack: bool):
+    with (pooled_executor(use_multiprocessor, threads)) as executor:
+        print(f"Executor: {executor}")
+        start = timer()
+        futures = [executor.submit(coalesce_partition, bucket, batched_topic[partition], use_localstack)
+                   for partition in batched_topic]
+        for future in futures:
+            print(f"Future: {future}")
+
+        wait(futures)
+        executor.shutdown()
+        end = timer()
+        print(f"Done all batches, time taken {end - start:.2f} seconds.")
+        return futures
 
 
-def coalesce_partition(s3, bucket, partition):
+def pooled_executor(multiprocessor, threads):
+    return ProcessPoolExecutor(max_workers=threads) if multiprocessor else ThreadPoolExecutor(max_workers=threads)
+
+
+def coalesce_partition(bucket, partition, use_localstack):
+    client = s3_client(use_localstack)
+    s3 = S3(client)
     return [coalesce_batch(s3, bucket, batch) for batch in partition]
 
 
@@ -68,6 +89,10 @@ def command_line_args():
                         action="store_true",
                         help='Target localstack instance.')
 
+    parser.add_argument('-m', '--multiprocessor', default=False,
+                        action="store_true",
+                        help='Use the process pool executor.')
+
     parser.add_argument('-n', '--partition',
                         choices=range(0, 19),
                         type=int,
@@ -80,7 +105,6 @@ def command_line_args():
                         help='The common prefix.')
 
     parser.add_argument('-t', '--threads',
-                        default=1,
                         choices=range(1, 11),
                         type=int,
                         help='The number of coalescing threads to run in parallel.')
