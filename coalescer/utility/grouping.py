@@ -67,7 +67,16 @@ def batched_object_summaries(max_size: int,
 
 
 def successful_result(results):
-    failures = []
+    all_succeeded = True
     for futures in results:
-        failures = [any(x is False for x in future.result()) for future in futures]
-    return not (any(x is True for x in failures))
+        for future in futures:
+            try:
+                result = future.result()
+                failures_exist = any(x is False for x in result)
+                if failures_exist:
+                    all_succeeded = False
+            except:
+                print(f"Future failed with exception: '{future.exception()}'")
+                all_succeeded = False
+
+    return all_succeeded
