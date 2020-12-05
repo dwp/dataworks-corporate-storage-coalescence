@@ -1,9 +1,9 @@
+import io
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from timeit import default_timer as timer
 
 import boto3
-import io
-from timeit import default_timer as timer
 
 
 def s3_client(use_localstack: bool):
@@ -54,17 +54,13 @@ class S3:
                 f"{topic}_{partition}_{start_offset}_{end_offset}.jsonl.gz"
 
             prefix = re.compile(r"/[^/]+$").sub("", batch[0]['object_key'])
-            coalesced_key = f"{prefix}/{coalesced_filename}"
-            coalesced_contents = self.__coalesced(bucket, batch)
-            self.upload(bucket, coalesced_key, coalesced_contents)
-            end = timer()
-            print(f"Put coalesced batch into s3 {coalesced_key}, size {len(coalesced_contents)}, time taken {end - start:.2f} seconds.")
+            coalesced_key = self.__coalesced_key(bucket, f"{prefix}/{coalesced_filename}")
 
-    def upload(self, bucket, key, contents):
-        start = timer()
-        self.client.upload_fileobj(io.BytesIO(contents), bucket, key)
-        end = timer()
-        print(f"Uploaded {bucket}/{key}, size {len(contents)} time taken {end - start:.2f} seconds.")
+            coalesced_contents = self.__coalesced(bucket, batch)
+            self.__upload(bucket, coalesced_key, coalesced_contents)
+            end = timer()
+            print(f"Put coalesced batch into s3 {coalesced_key}, "
+                  f"size {len(coalesced_contents)}, time taken {end - start:.2f} seconds.")
 
     def delete_batch(self, bucket: str, batch: list):
         if len(batch) > 0:
@@ -83,6 +79,12 @@ class S3:
             end = timer()
             print(f"Deleted batch of {len(batch)} items, time taken {end - start:.2f} seconds.")
 
+    def __upload(self, bucket, key, contents):
+        start = timer()
+        self.client.upload_fileobj(io.BytesIO(contents), bucket, key)
+        end = timer()
+        print(f"Uploaded {bucket}/{key}, size {len(contents)} time taken {end - start:.2f} seconds.")
+
     def __coalesced(self, bucket: str, batch: list) -> bytes:
         start = timer()
         coalesced = None
@@ -92,7 +94,9 @@ class S3:
         for contents in sorted_contents:
             coalesced = contents if not coalesced else coalesced + contents
         end = timer()
-        print(f"Fetched and coalesced batch of {len(batch)} items, size {len(coalesced)}, time taken {end - start:.2f} seconds.")
+        print(f"Fetched and coalesced batch of {len(batch)} items, "
+              f"size {len(coalesced)}, "
+              f"time taken {end - start:.2f} seconds.")
         return coalesced
 
     def __uncoalesced_objects(self, bucket, batch):
@@ -106,6 +110,15 @@ class S3:
         contents = self.__object_contents(s3_object)
         return key, contents
 
+    def __coalesced_key(self, bucket, key):
+        if not self.__exists(bucket, key):
+            return key
+        filename_re = re.compile(r"\.jsonl\.gz\.(\d+)$")
+        matches = filename_re.findall(key)
+        next_index = int(matches[0]) + 1 if matches else 2
+        next_key = re.compile(r"\.(\d+)$").sub("", key) + f".{next_index}"
+        return self.__coalesced_key(bucket, next_key)
+
     @staticmethod
     def __object_contents(s3_object: dict) -> bytes:
         stream = s3_object['Body']
@@ -113,5 +126,12 @@ class S3:
             return stream.read()
         finally:
             stream.close()
+
+    def __exists(self, bucket: str, key: str) -> bool:
+        try:
+            head = self.client.head_object(Bucket=bucket, Key=key)
+            return head is not None
+        except:
+            return False
 
     MAX_DELETE_BATCH_SIZE = 1_000

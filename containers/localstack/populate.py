@@ -23,9 +23,17 @@ def main():
         end_offset = args.batch_count * batch_number + (args.batch_count - 1)
         prefix = f"{args.cluster}." if args.cluster else ""
 
-        key = f"{args.prefix}/{args.database}/{args.collection}/{prefix}{args.database}.{args.collection}_{batch_number % 10}_{start_offset}-{end_offset}.jsonl.gz"
+        key = f"{args.prefix}/{args.database}/{args.collection}/" \
+              f"{prefix}{args.database}.{args.collection}_{batch_number % 10}_{start_offset}-{end_offset}.jsonl.gz"
         s3.put_object(Bucket=args.bucket, Body=compressed, Key=key)
         print(f"Put '{key}' into '{args.bucket}'.")
+
+    s3.put_object(Bucket=args.bucket, Body="phoney_object_1".encode(),
+                  Key="corporate_storage/ucfs_audit/2020/11/05/data/businessAudit/"
+                      "data.businessAudit_8_272800_328899.jsonl.gz")
+    s3.put_object(Bucket=args.bucket, Body="phoney_object_2".encode(),
+                  Key="corporate_storage/ucfs_audit/2020/11/05/data/businessAudit/"
+                      "data.businessAudit_8_272800_328899.jsonl.gz.2")
 
 
 def kafka_message(database: str, collection: str, batch_number: int, record_number: int):
