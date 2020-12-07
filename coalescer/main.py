@@ -2,8 +2,8 @@
 
 import argparse
 import sys
-from timeit import default_timer as timer
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, wait
+from timeit import default_timer as timer
 
 from botocore.exceptions import ClientError
 

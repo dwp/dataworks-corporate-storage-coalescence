@@ -76,7 +76,8 @@ class GroupingSpec(unittest.TestCase):
                 end_offset = item['end_offset']
                 collection = topic.replace("db.database.", "")
                 self.assertEqual(
-                    f"corporate_storage/ucfs_audit/2020/11/05/database/{collection}/{topic}_{partition}_{start_offset}-{end_offset}.jsonl.gz",
+                    f"corporate_storage/ucfs_audit/2020/11/05/database/{collection}/"
+                    f"{topic}_{partition}_{start_offset}-{end_offset}.jsonl.gz",
                     item['object_key'])
 
     def __summaries(self):
@@ -90,14 +91,16 @@ class GroupingSpec(unittest.TestCase):
     @staticmethod
     def __object_summary(collection: str, partition: int, i: int) -> dict:
         return {
-            "Key": f"corporate_storage/ucfs_audit/2020/11/05/database/{collection}/db.database.{collection}_{partition}_{i * 100}-{i * 100 + 99}.jsonl.gz",
+            "Key": f"corporate_storage/ucfs_audit/2020/11/05/database/{collection}/"
+                   f"db.database.{collection}_{partition}_{i * 100}-{i * 100 + 99}.jsonl.gz",
             "Size": 100
         }
 
     @staticmethod
     def __item(topic: str, partition: int, record: int) -> dict:
         return {
-            "object_key": f"corporate_storage/ucfs_audit/2020/11/05/data/businessAudit/{topic}_{partition}_{record * 100}-{record * 100 + 99}.jsonl.gz",
+            "object_key": f"corporate_storage/ucfs_audit/2020/11/05/data/businessAudit/"
+                          f"{topic}_{partition}_{record * 100}-{record * 100 + 99}.jsonl.gz",
             "topic": topic,
             "partition": partition,
             "start_offset": record * 100,

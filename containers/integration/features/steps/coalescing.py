@@ -21,6 +21,7 @@ def step_impl(context, num_files: int, bucket: str, prefix: str):
     client = s3_client()
     results = client.list_objects_v2(Bucket=bucket, Prefix=prefix)
     contents = results['Contents']
+    print(f"{num_files}, {len(contents)}")
     assert int(num_files) == len(contents)
     context.contents = contents
     context.client = client
@@ -31,7 +32,9 @@ def step_impl(context, num_files: int, bucket: str, prefix: str):
 def step_impl(context, num_records):
     objects = []
     for obj in context.contents:
-        objects.append(context.client.get_object(Bucket=context.bucket, Key=obj['Key']))
+        if not obj['Key'].endswith('data.businessAudit_8_272800_328899.jsonl.gz') \
+                and not obj['Key'].endswith('data.businessAudit_8_272800_328899.jsonl.gz.2'):
+            objects.append(context.client.get_object(Bucket=context.bucket, Key=obj['Key']))
 
     accumulated = None
     for obj in objects:
@@ -42,6 +45,11 @@ def step_impl(context, num_records):
     lines = uncompressed.split("\n")
     non_empty = [line for line in lines if len(line) > 0]
     assert len(non_empty) == int(num_records)
+
+
+@step("there will be an object with key {key}")
+def step_impl(context, key: str):
+    assert context.client.get_object(Bucket=context.bucket, Key=key) is not None
 
 
 def object_contents(s3_object: dict) -> bytes:
