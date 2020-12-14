@@ -10,6 +10,10 @@ create_corporate_data_bucket() {
     make_bucket corporate-data
 }
 
+create_manifest_data_bucket() {
+    make_bucket manifest-data
+}
+
 make_bucket() {
     local bucket_name=$1
 
@@ -23,8 +27,18 @@ make_bucket() {
 
 }
 
-put_objects_in_bucket() {
+put_manifests() {
+  ./populate.py -m -b manifest-data -u db -d accepted-data -c address \
+    -p business-data/manifest/streaming/main
+}
+
+put_corporate() {
   ./populate.py
+}
+
+put_objects_in_bucket() {
+  put_corporate
+  put_manifests
 }
 
 aws_local() {

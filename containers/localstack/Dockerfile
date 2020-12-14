@@ -15,6 +15,8 @@ WORKDIR $INSTALL_DIR
 COPY environment.sh ./
 COPY run.sh ./
 COPY populate.py ./
+COPY manifest.py ./
+COPY corporate.py ./
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 RUN chown -R $SERVICE_USER.$SERVICE_USER $SERVICE_USER_HOME

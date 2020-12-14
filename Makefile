@@ -40,8 +40,13 @@ integration-tests: services coalescer
 
 tests: unit-tests integration-tests
 
-s3-clear:
+s3-clear-manifest:
+	awslocal s3 rm --recursive s3://manifest-data
+
+s3-clear-corporate:
 	awslocal s3 rm --recursive s3://corporate-data
+
+s3-clear: s3-clear-manifest s3-clear-corporate
 
 s3-list:
 	awslocal s3 ls --recursive s3://corporate-data

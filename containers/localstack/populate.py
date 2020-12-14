@@ -1,91 +1,38 @@
 #!/usr/bin/env python
 import argparse
-import base64
-import binascii
-import gzip
-import json
-from functools import reduce
-from Crypto import Random
-from Crypto.Cipher import AES
-from Crypto.Util import Counter
 import boto3
+from corporate import corporate_key, corporate_batch
+from manifest import manifest_key, manifest_batch
 
 
 def main():
     args = command_line_args()
     s3 = s3_client()
+    print(f"batch_count: {args.batch_count}, record_count: {args.record_count}")
     for batch_number in range(args.batch_count):
-        batch = [kafka_message(args.database, args.collection, batch_number, record_number)
-                 for record_number in range(args.record_count)]
-        accumulated = reduce(lambda acc, x: f"{acc}\n{x}", batch, "")
-        compressed = gzip.compress(accumulated.encode("ASCII"))
         start_offset = args.batch_count * batch_number
         end_offset = args.batch_count * batch_number + (args.batch_count - 1)
-        prefix = f"{args.cluster}." if args.cluster else ""
-
-        key = f"{args.prefix}/{args.database}/{args.collection}/" \
-              f"{prefix}{args.database}.{args.collection}_{batch_number % 10}_{start_offset}-{end_offset}.jsonl.gz"
-        s3.put_object(Bucket=args.bucket, Body=compressed, Key=key)
+        body = object_body(args, batch_number)
+        key = object_key(args, batch_number, start_offset, end_offset)
+        s3.put_object(Bucket=args.bucket, Body=body, Key=key)
         print(f"Put '{key}' into '{args.bucket}'.")
 
-    s3.put_object(Bucket=args.bucket, Body="phoney_object_1".encode(),
-                  Key="corporate_storage/ucfs_audit/2020/11/05/data/businessAudit/"
-                      "data.businessAudit_8_272800_328899.jsonl.gz")
-    s3.put_object(Bucket=args.bucket, Body="phoney_object_2".encode(),
-                  Key="corporate_storage/ucfs_audit/2020/11/05/data/businessAudit/"
-                      "data.businessAudit_8_272800_328899.jsonl.gz.2")
+    if not args.manifests:
+        s3.put_object(Bucket=args.bucket, Body="phoney_object_1".encode(),
+                      Key="corporate_storage/ucfs_audit/2020/11/05/data/businessAudit/"
+                          "data.businessAudit_8_207899_261800.jsonl.gz")
+        s3.put_object(Bucket=args.bucket, Body="phoney_object_2".encode(),
+                      Key="corporate_storage/ucfs_audit/2020/11/05/data/businessAudit/"
+                          "data.businessAudit_8_207899_261800.jsonl.gz.2")
 
 
-def kafka_message(database: str, collection: str, batch_number: int, record_number: int):
-    key = "53Et7AKlQa1ifNCb/PY5iA=="
-    db_object = plaintext_db_object(batch_number, record_number)
-    iv, encrypted = encrypt(key, json.dumps(db_object))
-    return {
-        "traceId": f"{batch_number:05d}/{record_number:05d}",
-        "unitOfWorkId": f"{record_number:05d}",
-        "@type": "V4",
-        "message": {
-            "db": f"{database}",
-            "collection": f"{collection}",
-            "_id": {
-                "record_id": f"{record_number:05d}",
-                "batch_id": f"{batch_number:05d}"
-            },
-            "_timeBasedHash": "hash",
-            "@type": "MONGO_INSERT",
-            "_lastModifiedDateTime": "2018-12-14T15:01:02.000+0000",
-            "encryption": {
-                "encryptionKeyId": "cloudhsm:1,2",
-                "encryptedEncryptionKey": key,
-                "initialisationVector": iv,
-                "keyEncryptionKeyId": "cloudhsm:1,2"
-            },
-            "dbObject": f'"{encrypted}"'
-        },
-        "version": "core-4.master.9790",
-        "timestamp": "2019-07-04T07:27:35.104+0000"
-    }
+def object_key(args, batch_number: int, start_offset: int, end_offset: int) -> str:
+    return manifest_key(args, batch_number, start_offset, end_offset) if args.manifests \
+        else corporate_key(args, batch_number, start_offset, end_offset)
 
 
-def plaintext_db_object(batch_number: int, record_number: int):
-    return {
-        "_id": {
-            "record_id": f"{record_number:05d}",
-            "batch_id": f"{batch_number:05d}"
-        },
-        "createdDateTime": "2015-03-20T12:23:25.183Z",
-        "_lastModifiedDateTime": "2018-12-14T15:01:02.000+0000"
-    }
-
-
-def encrypt(key, plaintext):
-    initialisation_vector = Random.new().read(AES.block_size)
-    iv_int = int(binascii.hexlify(initialisation_vector), 16)
-    counter = Counter.new(AES.block_size * 8, initial_value=iv_int)
-    aes = AES.new(base64.b64decode(key), AES.MODE_CTR, counter=counter)
-    ciphertext = aes.encrypt(plaintext.encode("utf8"))
-    return (base64.b64encode(initialisation_vector).decode("ASCII"),
-            base64.b64encode(ciphertext).decode("ASCII"))
+def object_body(args, batch_number):
+    return manifest_batch(args, batch_number) if args.manifests else corporate_batch(args, batch_number)
 
 
 def command_line_args():
@@ -105,6 +52,10 @@ def command_line_args():
 
     parser.add_argument('-p', '--prefix', default="corporate_storage/ucfs_audit/2020/11/05", type=str,
                         help='The common prefix.')
+
+    parser.add_argument('-m', '--manifests', default=False,
+                        action="store_true",
+                        help='Coalesces streaming manifests.')
 
     parser.add_argument('-n', '--batch-count', default=1100, type=int,
                         help='The number of batches to create.')
