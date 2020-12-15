@@ -50,7 +50,7 @@ class GroupingSpec(unittest.TestCase):
 
     def test_grouping_all_partitions(self):
         object_summaries = self.__summaries()
-        result = grouped_object_summaries(object_summaries, None)
+        result = grouped_object_summaries(object_summaries, None, False)
         self.assertEqual(["db.database.collection1", "db.database.collection2"], list(result.keys()))
         for topic in list(result.keys()):
             partition_batch = result[topic]
@@ -59,7 +59,7 @@ class GroupingSpec(unittest.TestCase):
 
     def test_grouping_one_partition(self):
         object_summaries = self.__summaries()
-        result = grouped_object_summaries(object_summaries, 5)
+        result = grouped_object_summaries(object_summaries, 5, False)
         self.assertEqual(["db.database.collection1", "db.database.collection2"], list(result.keys()))
         for topic in list(result.keys()):
             partition_batch = result[topic]

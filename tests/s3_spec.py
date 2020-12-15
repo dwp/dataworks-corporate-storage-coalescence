@@ -16,7 +16,7 @@ class S3Spec(unittest.TestCase):
     def test_coalesce(self):
         client = self.__client()
         s3 = S3(client)
-        s3.coalesce_batch(self.bucket, self.__batch())
+        s3.coalesce_batch(self.bucket, self.__batch(), False)
         key = "corporate_storage/ucfs_audit/2020/11/05/data/businessAudit/data.businessAudit_2_0_99999.jsonl.gz"
         client.upload_fileobj.assert_called_once_with(ANY, self.bucket, key)
 
@@ -30,7 +30,7 @@ class S3Spec(unittest.TestCase):
             raise MagicMock(ClientError)
 
         client.head_object = Mock(side_effect=exists)
-        s3.coalesce_batch(self.bucket, self.__batch())
+        s3.coalesce_batch(self.bucket, self.__batch(), False)
         key = "corporate_storage/ucfs_audit/2020/11/05/data/businessAudit/data.businessAudit_2_0_99999.jsonl.gz.3"
         client.upload_fileobj.assert_called_once_with(ANY, self.bucket, key)
 

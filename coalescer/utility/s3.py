@@ -43,20 +43,21 @@ class S3:
 
         return objects
 
-    def coalesce_batch(self, bucket: str, batch: list):
+    def coalesce_batch(self, bucket: str, batch: list, manifests: bool):
         if len(batch) > 0:
             start = timer()
-            topic, partition, start_offset, end_offset = \
-                batch[0]['topic'], batch[0]['partition'], \
-                batch[0]['start_offset'], batch[-1]['end_offset']
+            partition, start_offset, end_offset = batch[0]['partition'], batch[0]['start_offset'], batch[-1]['end_offset']
 
-            coalesced_filename = \
-                f"{topic}_{partition}_{start_offset}_{end_offset}.jsonl.gz"
+            start_topic = batch[0]['start_topic'] if 'start_topic' in batch[0] else None
+            end_topic = batch[-1]['end_topic'] if 'end_topic' in batch[-1] else None
+            topic = batch[0]['topic'] if 'topic' in batch[0] else None
+
+            coalesced_filename = f"{start_topic}_{partition}_{start_offset}_{end_topic}_{partition}_{end_offset}.txt" if manifests \
+                else f"{topic}_{partition}_{start_offset}_{end_offset}.jsonl.gz"
 
             prefix = re.compile(r"/[^/]+$").sub("", batch[0]['object_key'])
             coalesced_key = self.__coalesced_key(bucket, f"{prefix}/{coalesced_filename}")
-
-            coalesced_contents = self.__coalesced(bucket, batch)
+            coalesced_contents = self.__coalesced(bucket, batch, manifests)
             self.__upload(bucket, coalesced_key, coalesced_contents)
             end = timer()
             print(f"Put coalesced batch into s3 {coalesced_key}, "
@@ -85,12 +86,15 @@ class S3:
         end = timer()
         print(f"Uploaded {bucket}/{key}, size {len(contents)} time taken {end - start:.2f} seconds.")
 
-    def __coalesced(self, bucket: str, batch: list) -> bytes:
+    def __coalesced(self, bucket: str, batch: list, manifests: bool) -> bytes:
         start = timer()
         coalesced = None
         results = [future.result() for future in self.__uncoalesced_objects(bucket, batch)]
         filename_re = re.compile(r"/[.\w]+_\d+_(\d+)-\d+\.jsonl\.gz$")
-        sorted_contents = [xs[1] for xs in sorted(results, key=lambda x: int(filename_re.findall(x[0])[0]))]
+
+        sorted_contents = [xs[1] for xs in results] if manifests \
+            else [xs[1] for xs in sorted(results, key=lambda x: int(filename_re.findall(x[0])[0]))]
+
         for contents in sorted_contents:
             coalesced = contents if not coalesced else coalesced + contents
         end = timer()

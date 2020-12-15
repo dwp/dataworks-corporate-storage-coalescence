@@ -4,3 +4,4 @@ venv/
 build/
 dist/
 dataworks_corporate_data_coalescence.egg-info
+*.gz
