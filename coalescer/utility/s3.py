@@ -89,7 +89,14 @@ class S3:
     def __coalesced(self, bucket: str, batch: list, manifests: bool) -> bytes:
         start = timer()
         coalesced = None
-        results = [future.result() for future in self.__uncoalesced_objects(bucket, batch)]
+
+        results = []
+        for future in self.__uncoalesced_objects(bucket, batch):
+            try:
+                results.append(future.result())
+            except:
+                print(f"Failed to fetch object '{future.exception()}', {future}")
+
         filename_re = re.compile(r"/[.\w]+_\d+_(\d+)-\d+\.jsonl\.gz$")
 
         sorted_contents = [xs[1] for xs in results] if manifests \
