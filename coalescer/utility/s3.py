@@ -97,7 +97,6 @@ class S3:
             except:
                 print(f"Failed to fetch object '{future.exception()}', {future}")
 
-        # results = [future.result() for future in self.__uncoalesced_objects(bucket, batch)]
         filename_re = re.compile(r"/[.\w]+_\d+_(\d+)-\d+\.jsonl\.gz$")
 
         sorted_contents = [xs[1] for xs in results] if manifests \
