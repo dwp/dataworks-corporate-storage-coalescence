@@ -74,6 +74,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           tags: "latest, ${{ needs.get-publish-version.outputs.publish-version }}"
           tag_semver: true
+          workdir: coalescer
 
   snyk-monitor:
     runs-on: ubuntu-latest
