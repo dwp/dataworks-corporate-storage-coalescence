@@ -1,5 +1,8 @@
 SHELL:=bash
 
+aws_profile=default
+aws_region=eu-west-2
+
 default: help
 
 .PHONY: help
@@ -9,6 +12,13 @@ help:
 .PHONY: bootstrap
 bootstrap: ## Bootstrap local environment for first use
 	@make git-hooks
+	pip3 install --user Jinja2 PyYAML boto3
+	@{ \
+		export AWS_PROFILE=$(aws_profile); \
+		export AWS_REGION=$(aws_region); \
+		python3 bootstrap_terraform.py; \
+	}
+	terraform fmt -recursive
 
 .PHONY: git-hooks
 git-hooks: ## Set up hooks in .githooks
@@ -54,3 +64,7 @@ s3-list:
 clean:
 	rm -rf dist build coalescer/dataworks_corporate_data_coalescence.egg-info .tox
 	find . -type d -name __pycache__ | xargs -r rm -vrf
+
+.PHONY: terraform-workspace-new
+terraform-workspace-new: ## Creates new Terraform workspace with Concourse remote execution. Run `terraform-workspace-new workspace=<workspace_name>`
+	fly -t aws-concourse execute --config create-workspace.yml --input repo=. -v workspace="$(workspace)"
