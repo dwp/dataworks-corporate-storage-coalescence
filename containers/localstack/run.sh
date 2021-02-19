@@ -5,6 +5,7 @@ source ./environment.sh
 main() {
   init
   create_corporate_data_bucket
+  create_manifest_data_bucket
   put_objects_in_bucket
 }
 

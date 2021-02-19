@@ -2,78 +2,73 @@
 
 import argparse
 import sys
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, wait
+from timeit import default_timer as timer
 
-import botocore
+from botocore.exceptions import ClientError
 
-from concurrent.futures import ThreadPoolExecutor, wait
-from utility.batching import batched_object_summaries
-from utility.grouping import grouped_object_summaries
+from utility.grouping import batched_object_summaries, grouped_object_summaries, successful_result
 from utility.s3 import S3, s3_client
 
 
 def main():
+    start = timer()
     args = command_line_args()
     client = s3_client(args.localstack)
     s3 = S3(client)
-    print(f"Bucket: '{args.bucket}', prefix: '{args.prefix}'.")
+    print(f"Bucket: '{args.bucket}', prefix: '{args.prefix}', partition: {args.partition}, "
+          f"threads: {args.threads}, multiprocessor: {args.multiprocessor}.")
     summaries = s3.object_summaries(args.bucket, args.prefix)
-    grouped = grouped_object_summaries(summaries)
+    print(f"Fetch summaries, size {len(summaries)}")
+    grouped = grouped_object_summaries(summaries, args.partition, args.manifests)
+    print(f"Grouped, size {len(grouped)}")
     batched = batched_object_summaries(args.size, args.files, grouped)
-    [coalesce_topic(s3, args.bucket, batched[topic])
-     for topic in batched.keys()]
+    print("Created batches, coalescing")
+    results = [coalesce_topic(args.bucket, batched[topic], args.threads, args.multiprocessor, args.localstack, args.manifests)
+               for topic in batched.keys()]
+    for result in results:
+        print(f"Result: {result}")
+    end = timer()
+    print(f"Time taken: {end - start:.2f} seconds.")
+    exit(0 if successful_result(results) else 2)
 
 
-def coalesce_topic(s3, bucket, topic):
-    [coalesce_partition(s3, bucket, topic[partition]) for partition in topic]
+def coalesce_topic(bucket: str, batched_topic, threads: int, use_multiprocessor, use_localstack: bool, manifests: bool):
+    with (pooled_executor(use_multiprocessor, threads)) as executor:
+        start = timer()
+        futures = [executor.submit(coalesce_partition, bucket, batched_topic[partition], use_localstack, manifests)
+                   for partition in batched_topic]
+        for future in futures:
+            print(f"Future: {future}")
+
+        wait(futures)
+        executor.shutdown()
+        end = timer()
+        print(f"Done all batches, time taken {end - start:.2f} seconds.")
+        return futures
 
 
-def coalesce_partition(s3, bucket, partition, chunk_size):
-    if chunk_size > 1:
-        for batch_chunk in list(get_chunked_batches(partition, chunk_size)):
-            [result_input for result_input in coalesce_partition_async(s3, bucket, batch_chunk)]
-    else:
-        [coalesce_partition_sync(s3, bucket, batch) for batch in partition]
+def pooled_executor(multiprocessor, threads):
+    return ProcessPoolExecutor(max_workers=threads) if multiprocessor else ThreadPoolExecutor(max_workers=threads)
 
 
-def coalesce_partition_sync(s3, bucket, partition):
-    [coalesce_batch(s3, bucket, batch) for batch in partition]
+def coalesce_partition(bucket, partition, use_localstack: bool, manifests: bool):
+    client = s3_client(use_localstack)
+    s3 = S3(client)
+    return [coalesce_batch(s3, bucket, batch, manifests) for batch in partition]
 
 
-def coalesce_partition_async(s3, bucket, batch_chunk):
-    with ThreadPoolExecutor(max_workers=len(batch_chunk)) as executor_input:
-        future_results_input = []
-
-        for batch in batch_chunk:
-            future_results_input.append(
-                executor_input.submit(
-                    coalesce_batch,
-                    s3,
-                    bucket,
-                    batch,
-                )
-            )
-
-        wait(future_results_input)
-        for future in future_results_input:
-            try:
-                yield future.result()
-            except Exception as error:
-                print(f"Error coalescing batch async: {error}", file=sys.stderr)
-
-
-def get_chunked_batches(batch_array, chunk_size):
-    for count in range(0, len(batch_array), chunk_size):
-        yield batch_array[count:count+chunk_size]
-
-
-def coalesce_batch(s3, bucket, batch):
+def coalesce_batch(s3, bucket, batch, manifests) -> bool:
     try:
-        s3.coalesce_batch(bucket, batch)
-        s3.delete_batch(bucket, batch)
-    except botocore.exceptions.ClientError as error:
-        print(f"Error coalescing batch: {error}", file=sys.stderr)
-        [print(f"Failed to coalesce object: {obj}", file=sys.stderr)
-         for obj in batch]
+        if len(batch) > 1:
+            s3.coalesce_batch(bucket, batch, manifests)
+            s3.delete_batch(bucket, batch)
+        else:
+            print("Not processing batch of size 1")
+        return True
+    except ClientError as error:
+        print(f"Error coalescing batch: '{error}'.", file=sys.stderr)
+        return False
 
 
 def command_line_args():
@@ -94,16 +89,29 @@ def command_line_args():
                         action="store_true",
                         help='Target localstack instance.')
 
+    parser.add_argument('-m', '--multiprocessor', default=False,
+                        action="store_true",
+                        help='Use the process pool executor.')
+
+    parser.add_argument('-n', '--partition',
+                        choices=range(0, 19),
+                        type=int,
+                        help='The partition to coalesce.')
+
     parser.add_argument('-p', '--prefix',
                         default="corporate_storage/"
                                 "ucfs_audit/2020/11/05/data/businessAudit",
                         type=str,
                         help='The common prefix.')
 
-    parser.add_argument('-c', '--chunk-size',
-                        default=1,
+    parser.add_argument('-a', '--manifests', default=False,
+                        action="store_true",
+                        help='Coalesces streaming manifests.')
+
+    parser.add_argument('-t', '--threads',
+                        choices=range(1, 11),
                         type=int,
-                        help='The number of batches to process in parallel.')
+                        help='The number of coalescing threads to run in parallel.')
 
     return parser.parse_args()
 

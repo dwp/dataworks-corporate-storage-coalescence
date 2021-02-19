@@ -28,6 +28,7 @@ localstack: ## bring up localstack container and wait for it to be ready
 
 services: localstack
 
+.PHONY: coalescer
 coalescer:
 	docker-compose up coalescer
 
@@ -39,8 +40,17 @@ integration-tests: services coalescer
 
 tests: unit-tests integration-tests
 
-s3-clear:
+s3-clear-manifest:
+	awslocal s3 rm --recursive s3://manifest-data
+
+s3-clear-corporate:
 	awslocal s3 rm --recursive s3://corporate-data
+
+s3-clear: s3-clear-manifest s3-clear-corporate
 
 s3-list:
 	awslocal s3 ls --recursive s3://corporate-data
+
+clean:
+	rm -rf dist build coalescer/dataworks_corporate_data_coalescence.egg-info .tox
+	find . -type d -name __pycache__ | xargs -r rm -vrf

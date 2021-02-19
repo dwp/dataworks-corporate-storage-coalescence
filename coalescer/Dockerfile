@@ -6,7 +6,7 @@ WORKDIR $COALESCE_HOME
 COPY main.py ./
 COPY utility ./utility
 COPY requirements.txt ./
+COPY run.sh ./
 RUN pip install -r ./requirements.txt
-RUN chmod +x ./main.py
-RUN pwd && ls
-ENTRYPOINT ["./main.py", "-l"]
+RUN chmod +x ./main.py ./run.sh
+ENTRYPOINT ["./run.sh"]

@@ -21,27 +21,38 @@ def step_impl(context, num_files: int, bucket: str, prefix: str):
     client = s3_client()
     results = client.list_objects_v2(Bucket=bucket, Prefix=prefix)
     contents = results['Contents']
+    print(f"{num_files}, {len(contents)}")
     assert int(num_files) == len(contents)
     context.contents = contents
     context.client = client
     context.bucket = bucket
 
 
-@step("there will be {num_records} records therein")
-def step_impl(context, num_records):
+@step("there will be {num_records} {type_of} records therein")
+def step_impl(context, num_records, type_of):
     objects = []
+
     for obj in context.contents:
-        objects.append(context.client.get_object(Bucket=context.bucket, Key=obj['Key']))
+        if not obj['Key'].endswith('data.businessAudit_8_207899_261800.jsonl.gz') \
+                and not obj['Key'].endswith('data.businessAudit_8_207899_261800.jsonl.gz.2'):
+            objects.append(context.client.get_object(Bucket=context.bucket, Key=obj['Key']))
 
     accumulated = None
     for obj in objects:
         contents = object_contents(obj)
         accumulated = accumulated + contents if accumulated else contents
 
-    uncompressed = gzip.decompress(accumulated).decode()
-    lines = uncompressed.split("\n")
+    uncompressed = gzip.decompress(accumulated) if type_of == "corporate" else accumulated
+    lines = uncompressed.decode().split("\n")
     non_empty = [line for line in lines if len(line) > 0]
+    print(f"non_empty: {len(non_empty)}, num_records: {num_records}, lines: {len(lines)}")
     assert len(non_empty) == int(num_records)
+
+
+@step("there will be an object with key {key}")
+def step_impl(context, key: str):
+    print(f"{context.bucket}, key: {key}")
+    assert context.client.get_object(Bucket=context.bucket, Key=key) is not None
 
 
 def object_contents(s3_object: dict) -> bytes:
