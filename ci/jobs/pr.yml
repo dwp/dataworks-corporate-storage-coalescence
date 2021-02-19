@@ -10,10 +10,10 @@ jobs:
           status: pending
       - .: (( inject meta.plan.terraform-bootstrap ))
         input_mapping:
-          corporate-storage-coalescence: dataworks-corporate-storage-coalescence-pr
+          dataworks-corporate-storage-coalescence: dataworks-corporate-storage-coalescence-pr
       - .: (( inject meta.plan.terraform-plan ))
         input_mapping:
-          corporate-storage-coalescence: dataworks-corporate-storage-coalescence-pr
+          dataworks-corporate-storage-coalescence: dataworks-corporate-storage-coalescence-pr
         params:
           TF_WORKSPACE: "management"
           DETAILED_EXITCODE: ""
