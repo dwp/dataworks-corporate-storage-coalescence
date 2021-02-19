@@ -1,0 +1,14 @@
+groups:
+  - name: master
+    jobs:
+      - management-dev
+      - management
+
+  - name: pull-request
+    jobs:
+      - dataworks-corporate-storage-coalescence-pr
+      
+  - name: mirror
+    jobs:
+      - mirror-dwpdigital-dataworks-corporate-storage-coalescence-dev
+      - mirror-dwpdigital-dataworks-corporate-storage-coalescence

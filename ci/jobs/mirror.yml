@@ -1,0 +1,46 @@
+resources:
+  - name: dwpdigital-dataworks-corporate-storage-coalescence
+    type: concourse-registry-image-resource
+    source:
+      repository: dwpdigital/dataworks-corporate-storage-coalescence
+    check_every: 5m
+
+  - name: ecr-dwpdigital-dataworks-corporate-storage-coalescence-dev
+    .: (( inject meta.resources.ecr-resource ))
+    source:
+      repository: "dataworks-corporate-storage-coalescence"
+
+  - name: ecr-dwpdigital-dataworks-corporate-storage-coalescence
+    .: (( inject meta.resources.ecr-resource ))
+    source:
+      repository: "dataworks-corporate-storage-coalescence"
+      aws_role_arn: arn:aws:iam::((dataworks.aws_management_acc)):role/ci
+
+jobs:
+  - name: mirror-dwpdigital-dataworks-corporate-storage-coalescence-dev
+    serial_groups: [dataworks-corporate-storage-coalescence]
+    plan:
+      - get: dwpdigital-dataworks-corporate-storage-coalescence
+        trigger: true
+        params:
+          format: oci
+        attempts: 3
+      - put: ecr-dwpdigital-dataworks-corporate-storage-coalescence-dev
+        params:
+          image: "dwpdigital-dataworks-corporate-storage-coalescence/image.tar"
+          additional_tags: "dwpdigital-dataworks-corporate-storage-coalescence/tag"
+        attempts: 3
+
+  - name: mirror-dwpdigital-dataworks-corporate-storage-coalescence
+    serial_groups: [dataworks-corporate-storage-coalescence]
+    plan:
+      - get: dwpdigital-dataworks-corporate-storage-coalescence
+        trigger: true
+        params:
+          format: oci
+        attempts: 3
+      - put: ecr-dwpdigital-dataworks-corporate-storage-coalescence
+        params:
+          image: "dwpdigital-dataworks-corporate-storage-coalescence/image.tar"
+          additional_tags: "dwpdigital-dataworks-corporate-storage-coalescence/tag"
+        attempts: 3
