@@ -1,0 +1,340 @@
+groups:
+- jobs:
+  - management-dev
+  - management
+  name: master
+- jobs:
+  - dataworks-corporate-storage-coalescence-pr
+  name: pull-request
+- jobs:
+  - mirror-dwpdigital-dataworks-corporate-storage-coalescence-dev
+  - mirror-dwpdigital-dataworks-corporate-storage-coalescence
+  name: mirror
+jobs:
+- max_in_flight: 1
+  name: management-dev
+  plan:
+  - get: dataworks-corporate-storage-coalescence
+    trigger: true
+  - config:
+      image_resource:
+        source:
+          repository: ((dataworks.docker_awscli_repository))
+          tag: ((dataworks.docker_awscli_version))
+          version: ((dataworks.docker_awscli_version))
+        type: docker-image
+      inputs:
+      - name: dataworks-corporate-storage-coalescence
+      outputs:
+      - name: terraform-bootstrap
+      params:
+        AWS_REGION: ((dataworks.aws_region))
+      platform: linux
+      run:
+        args:
+        - -exc
+        - |
+          python bootstrap_terraform.py
+          cp terraform.tf ../terraform-bootstrap
+        dir: dataworks-corporate-storage-coalescence
+        path: sh
+    task: terraform-bootstrap
+  - config:
+      image_resource:
+        source:
+          repository: ((dataworks.terraform_repository))
+          tag: ((dataworks.terraform_version))
+        type: docker-image
+      inputs:
+      - name: dataworks-corporate-storage-coalescence
+      - name: terraform-bootstrap
+      params:
+        TF_CLI_ARGS_apply: -lock-timeout=300s
+        TF_CLI_ARGS_plan: -lock-timeout=300s
+        TF_INPUT: false
+        TF_VAR_costcode: ((dataworks.costcode))
+      platform: linux
+      run:
+        args:
+        - -exc
+        - |
+          cp ../terraform-bootstrap/terraform.tf .
+          terraform workspace show
+          terraform init
+          terraform plan -out terraform.plan
+          terraform apply -auto-approve terraform.plan
+        dir: dataworks-corporate-storage-coalescence
+        path: sh
+    task: terraform-apply
+  - config:
+      image_resource:
+        source:
+          repository: ((dataworks.terraform_repository))
+          tag: ((dataworks.terraform_version))
+        type: docker-image
+      inputs:
+      - name: dataworks-corporate-storage-coalescence
+      - name: terraform-bootstrap
+      params:
+        TF_CLI_ARGS_apply: -lock-timeout=300s
+        TF_CLI_ARGS_plan: -lock-timeout=300s
+        TF_INPUT: false
+        TF_VAR_costcode: ((dataworks.costcode))
+      platform: linux
+      run:
+        args:
+        - -exc
+        - |
+          cp ../terraform-bootstrap/terraform.tf .
+          terraform workspace show
+          terraform init
+          terraform plan $DETAILED_EXITCODE
+        dir: dataworks-corporate-storage-coalescence
+        path: sh
+    params:
+      DETAILED_EXITCODE: -detailed-exitcode
+    task: terraform-plan
+- max_in_flight: 1
+  name: management
+  plan:
+  - get: dataworks-corporate-storage-coalescence
+    passed:
+    - management-dev
+    trigger: true
+  - config:
+      image_resource:
+        source:
+          repository: ((dataworks.docker_awscli_repository))
+          tag: ((dataworks.docker_awscli_version))
+          version: ((dataworks.docker_awscli_version))
+        type: docker-image
+      inputs:
+      - name: dataworks-corporate-storage-coalescence
+      outputs:
+      - name: terraform-bootstrap
+      params:
+        AWS_REGION: ((dataworks.aws_region))
+      platform: linux
+      run:
+        args:
+        - -exc
+        - |
+          python bootstrap_terraform.py
+          cp terraform.tf ../terraform-bootstrap
+        dir: dataworks-corporate-storage-coalescence
+        path: sh
+    task: terraform-bootstrap
+  - config:
+      image_resource:
+        source:
+          repository: ((dataworks.terraform_repository))
+          tag: ((dataworks.terraform_version))
+        type: docker-image
+      inputs:
+      - name: dataworks-corporate-storage-coalescence
+      - name: terraform-bootstrap
+      params:
+        TF_CLI_ARGS_apply: -lock-timeout=300s
+        TF_CLI_ARGS_plan: -lock-timeout=300s
+        TF_INPUT: false
+        TF_VAR_costcode: ((dataworks.costcode))
+      platform: linux
+      run:
+        args:
+        - -exc
+        - |
+          cp ../terraform-bootstrap/terraform.tf .
+          terraform workspace show
+          terraform init
+          terraform plan -out terraform.plan
+          terraform apply -auto-approve terraform.plan
+        dir: dataworks-corporate-storage-coalescence
+        path: sh
+    params:
+      TF_WORKSPACE: management
+    task: terraform-apply
+  - config:
+      image_resource:
+        source:
+          repository: ((dataworks.terraform_repository))
+          tag: ((dataworks.terraform_version))
+        type: docker-image
+      inputs:
+      - name: dataworks-corporate-storage-coalescence
+      - name: terraform-bootstrap
+      params:
+        TF_CLI_ARGS_apply: -lock-timeout=300s
+        TF_CLI_ARGS_plan: -lock-timeout=300s
+        TF_INPUT: false
+        TF_VAR_costcode: ((dataworks.costcode))
+      platform: linux
+      run:
+        args:
+        - -exc
+        - |
+          cp ../terraform-bootstrap/terraform.tf .
+          terraform workspace show
+          terraform init
+          terraform plan $DETAILED_EXITCODE
+        dir: dataworks-corporate-storage-coalescence
+        path: sh
+    params:
+      DETAILED_EXITCODE: -detailed-exitcode
+      TF_WORKSPACE: management
+    task: terraform-plan
+- name: mirror-dwpdigital-dataworks-corporate-storage-coalescence-dev
+  plan:
+  - attempts: 3
+    get: dwpdigital-dataworks-corporate-storage-coalescence
+    params:
+      format: oci
+    trigger: true
+  - attempts: 3
+    params:
+      additional_tags: dwpdigital-dataworks-corporate-storage-coalescence/tag
+      image: dwpdigital-dataworks-corporate-storage-coalescence/image.tar
+    put: ecr-dwpdigital-dataworks-corporate-storage-coalescence-dev
+  serial_groups:
+  - dataworks-corporate-storage-coalescence
+- name: mirror-dwpdigital-dataworks-corporate-storage-coalescence
+  plan:
+  - attempts: 3
+    get: dwpdigital-dataworks-corporate-storage-coalescence
+    params:
+      format: oci
+    trigger: true
+  - attempts: 3
+    params:
+      additional_tags: dwpdigital-dataworks-corporate-storage-coalescence/tag
+      image: dwpdigital-dataworks-corporate-storage-coalescence/image.tar
+    put: ecr-dwpdigital-dataworks-corporate-storage-coalescence
+  serial_groups:
+  - dataworks-corporate-storage-coalescence
+- name: dataworks-corporate-storage-coalescence-pr
+  plan:
+  - get: dataworks-corporate-storage-coalescence-pr
+    trigger: true
+    version: every
+  - params:
+      path: dataworks-corporate-storage-coalescence-pr
+      status: pending
+    put: dataworks-corporate-storage-coalescence-pr
+  - config:
+      image_resource:
+        source:
+          repository: ((dataworks.docker_awscli_repository))
+          tag: ((dataworks.docker_awscli_version))
+          version: ((dataworks.docker_awscli_version))
+        type: docker-image
+      inputs:
+      - name: dataworks-corporate-storage-coalescence
+      outputs:
+      - name: terraform-bootstrap
+      params:
+        AWS_REGION: ((dataworks.aws_region))
+      platform: linux
+      run:
+        args:
+        - -exc
+        - |
+          python bootstrap_terraform.py
+          cp terraform.tf ../terraform-bootstrap
+        dir: dataworks-corporate-storage-coalescence
+        path: sh
+    input_mapping:
+      corporate-storage-coalescence: dataworks-corporate-storage-coalescence-pr
+    task: terraform-bootstrap
+  - config:
+      image_resource:
+        source:
+          repository: ((dataworks.terraform_repository))
+          tag: ((dataworks.terraform_version))
+        type: docker-image
+      inputs:
+      - name: dataworks-corporate-storage-coalescence
+      - name: terraform-bootstrap
+      params:
+        TF_CLI_ARGS_apply: -lock-timeout=300s
+        TF_CLI_ARGS_plan: -lock-timeout=300s
+        TF_INPUT: false
+        TF_VAR_costcode: ((dataworks.costcode))
+      platform: linux
+      run:
+        args:
+        - -exc
+        - |
+          cp ../terraform-bootstrap/terraform.tf .
+          terraform workspace show
+          terraform init
+          terraform plan $DETAILED_EXITCODE
+        dir: dataworks-corporate-storage-coalescence
+        path: sh
+    input_mapping:
+      corporate-storage-coalescence: dataworks-corporate-storage-coalescence-pr
+    on_failure:
+      params:
+        path: dataworks-corporate-storage-coalescence-pr
+        status: failure
+      put: dataworks-corporate-storage-coalescence-pr
+    on_success:
+      params:
+        path: dataworks-corporate-storage-coalescence-pr
+        status: success
+      put: dataworks-corporate-storage-coalescence-pr
+    params:
+      DETAILED_EXITCODE: ""
+      TF_WORKSPACE: management
+    task: terraform-plan
+resource_types:
+- name: pull-request
+  source:
+    repository: teliaoss/github-pr-resource
+    tag: latest
+  type: docker-image
+- name: registry-image-resource
+  source:
+    repository: dwpdigital/registry-image-resource
+    tag: latest
+  type: docker-image
+- name: concourse-registry-image-resource
+  source:
+    repository: concourse/registry-image-resource
+    tag: latest
+  type: docker-image
+resources:
+- check_every: 720h
+  name: dataworks-corporate-storage-coalescence-pr
+  source:
+    access_token: ((dataworks-secrets.concourse_github_pat))
+    repository: dwp/dataworks-corporate-storage-coalescence
+  type: pull-request
+  webhook_token: ((dataworks.concourse_github_webhook_token))
+- check_every: 720h
+  name: dataworks-corporate-storage-coalescence
+  source:
+    access_token: ((dataworks-secrets.concourse_github_pat))
+    branch: master
+    uri: https://github.com/dwp/dataworks-corporate-storage-coalescence.git
+  type: git
+  webhook_token: ((dataworks.concourse_github_webhook_token))
+- check_every: 5m
+  name: dwpdigital-dataworks-corporate-storage-coalescence
+  source:
+    repository: dwpdigital/dataworks-corporate-storage-coalescence
+  type: concourse-registry-image-resource
+- name: ecr-dwpdigital-dataworks-corporate-storage-coalescence-dev
+  source:
+    aws_access_key_id: ((dataworks-secrets.ci_aws_access_key_id))
+    aws_region: ((dataworks.aws_region))
+    aws_role_arn: arn:aws:iam::((dataworks.aws_management_dev_acc)):role/ci
+    aws_secret_access_key: ((dataworks-secrets.ci_aws_secret_access_key))
+    repository: dataworks-corporate-storage-coalescence
+  type: registry-image-resource
+- name: ecr-dwpdigital-dataworks-corporate-storage-coalescence
+  source:
+    aws_access_key_id: ((dataworks-secrets.ci_aws_access_key_id))
+    aws_region: ((dataworks.aws_region))
+    aws_role_arn: arn:aws:iam::((dataworks.aws_management_acc)):role/ci
+    aws_secret_access_key: ((dataworks-secrets.ci_aws_secret_access_key))
+    repository: dataworks-corporate-storage-coalescence
+  type: registry-image-resource

@@ -1,0 +1,29 @@
+jobs:
+  - name: dataworks-corporate-storage-coalescence-pr
+    plan:
+      - get: dataworks-corporate-storage-coalescence-pr
+        trigger: true
+        version: every
+      - put: dataworks-corporate-storage-coalescence-pr
+        params:
+          path: dataworks-corporate-storage-coalescence-pr
+          status: pending
+      - .: (( inject meta.plan.terraform-bootstrap ))
+        input_mapping:
+          corporate-storage-coalescence: dataworks-corporate-storage-coalescence-pr
+      - .: (( inject meta.plan.terraform-plan ))
+        input_mapping:
+          corporate-storage-coalescence: dataworks-corporate-storage-coalescence-pr
+        params:
+          TF_WORKSPACE: "management"
+          DETAILED_EXITCODE: ""
+        on_failure:
+          put: dataworks-corporate-storage-coalescence-pr
+          params:
+            path: dataworks-corporate-storage-coalescence-pr
+            status: failure
+        on_success:
+          put: dataworks-corporate-storage-coalescence-pr
+          params:
+            path: dataworks-corporate-storage-coalescence-pr
+            status: success
