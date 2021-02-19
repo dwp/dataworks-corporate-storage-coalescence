@@ -65,6 +65,13 @@ clean:
 	rm -rf dist build coalescer/dataworks_corporate_data_coalescence.egg-info .tox
 	find . -type d -name __pycache__ | xargs -r rm -vrf
 
+
 .PHONY: terraform-workspace-new
-terraform-workspace-new: ## Creates new Terraform workspace with Concourse remote execution. Run `terraform-workspace-new workspace=<workspace_name>`
-	fly -t aws-concourse execute --config create-workspace.yml --input repo=. -v workspace="$(workspace)"
+terraform-workspace-new: ## Creates new Terraform workspace with Concourse remote execution
+	declare -a workspace=( management ) \
+	make bootstrap ; \
+	cp terraform.tf workspaces.tf && \
+	for i in "$${workspace[@]}" ; do \
+		fly -t aws-concourse execute --config create-workspace.yml --input repo=. -v workspace="$$i" ; \
+	done
+	rm workspaces.tf
