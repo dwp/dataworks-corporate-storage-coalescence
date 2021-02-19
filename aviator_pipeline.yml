@@ -242,7 +242,7 @@ jobs:
         dir: dataworks-corporate-storage-coalescence
         path: sh
     input_mapping:
-      corporate-storage-coalescence: dataworks-corporate-storage-coalescence-pr
+      dataworks-corporate-storage-coalescence: dataworks-corporate-storage-coalescence-pr
     task: terraform-bootstrap
   - config:
       image_resource:
@@ -270,7 +270,7 @@ jobs:
         dir: dataworks-corporate-storage-coalescence
         path: sh
     input_mapping:
-      corporate-storage-coalescence: dataworks-corporate-storage-coalescence-pr
+      dataworks-corporate-storage-coalescence: dataworks-corporate-storage-coalescence-pr
     on_failure:
       params:
         path: dataworks-corporate-storage-coalescence-pr
