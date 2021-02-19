@@ -11,6 +11,6 @@ resource "aws_ecr_repository_policy" "dataworks-corporate-storage-coalescence" {
   policy     = data.terraform_remote_state.management.outputs.ecr_iam_policy_document
 }
 
-output "ecr_example_url" {
+output "ecr_url" {
   value = aws_ecr_repository.dataworks-corporate-storage-coalescence.repository_url
 }
