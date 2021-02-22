@@ -48,12 +48,12 @@ def grouped_object_summaries(summaries: list, partition_number: Optional[int], m
 
 
 def filename_pattern(partition: int) -> str:
-    return r"/([.\w]+)_" + f"({partition})" + r"_(\d+)-(\d+)\.jsonl\.gz$" if partition \
+    return r"/([.\w]+)_" + f"({partition})" + r"_(\d+)-(\d+)\.jsonl\.gz$" if partition and partition >= 0  \
         else r"/([.\w]+)_(\d+)_(\d+)-(\d+)\.jsonl\.gz$"
 
 
 def manifest_filename_pattern(partition: int) -> str:
-    return r"([-.\w]+)_" + f"({partition})" + r"_(\d+)-([-.\w]+)_" + f"{partition}" + r"_(\d+).txt" if partition \
+    return r"([-.\w]+)_" + f"({partition})" + r"_(\d+)-([-.\w]+)_" + f"{partition}" + r"_(\d+).txt" if partition and partition >= 0 \
         else r"([-.\w]+)_(\d+)_(\d+)-([-.\w]+)_\d+_(\d+).txt"
 
 

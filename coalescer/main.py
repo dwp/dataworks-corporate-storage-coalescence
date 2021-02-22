@@ -94,7 +94,8 @@ def command_line_args():
                         help='Use the process pool executor.')
 
     parser.add_argument('-n', '--partition',
-                        choices=range(0, 19),
+                        choices=range(-1, 19),
+                        default=-1,
                         type=int,
                         help='The partition to coalesce.')
 
@@ -110,6 +111,7 @@ def command_line_args():
 
     parser.add_argument('-t', '--threads',
                         choices=range(1, 11),
+                        default=1,
                         type=int,
                         help='The number of coalescing threads to run in parallel.')
 
