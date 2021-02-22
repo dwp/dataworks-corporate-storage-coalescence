@@ -49,7 +49,8 @@ def coalesce_topic(bucket: str, batched_topic, threads: int, use_multiprocessor,
 
 
 def pooled_executor(multiprocessor, threads):
-    return ProcessPoolExecutor(max_workers=threads) if multiprocessor else ThreadPoolExecutor(max_workers=threads)
+    threads_qualified = threads if threads and threads > 0 else None
+    return ProcessPoolExecutor(max_workers=threads_qualified) if multiprocessor else ThreadPoolExecutor(max_workers=threads_qualified)
 
 
 def coalesce_partition(bucket, partition, use_localstack: bool, manifests: bool):
@@ -94,7 +95,8 @@ def command_line_args():
                         help='Use the process pool executor.')
 
     parser.add_argument('-n', '--partition',
-                        choices=range(0, 19),
+                        choices=range(-1, 19),
+                        default=-1,
                         type=int,
                         help='The partition to coalesce.')
 
@@ -109,7 +111,8 @@ def command_line_args():
                         help='Coalesces streaming manifests.')
 
     parser.add_argument('-t', '--threads',
-                        choices=range(1, 11),
+                        choices=range(0, 11),
+                        default=0,
                         type=int,
                         help='The number of coalescing threads to run in parallel.')
 
