@@ -49,7 +49,7 @@ def coalesce_topic(bucket: str, batched_topic, threads: int, use_multiprocessor,
 
 
 def pooled_executor(multiprocessor, threads):
-    threads_qualified = threads if threads and threads > 0 else ""
+    threads_qualified = threads if threads and threads > 0 else None
     return ProcessPoolExecutor(max_workers=threads_qualified) if multiprocessor else ThreadPoolExecutor(max_workers=threads_qualified)
 
 
