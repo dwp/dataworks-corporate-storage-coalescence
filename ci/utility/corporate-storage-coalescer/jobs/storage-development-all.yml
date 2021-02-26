@@ -1,0 +1,81 @@
+jobs:
+  - name: storage-development-all
+    max_in_flight: 1
+    plan:
+      - in_parallel:
+        - put: meta
+          resource: meta-development
+        - get: utc-1am
+          trigger: true
+        - get: dataworks-corporate-storage-coalescence
+          trigger: false
+        - get: aws-ingestion
+          trigger: false
+        - get: aws-internal-compute
+          trigger: false
+        - get: dataworks-aws-ingest-consumers
+          trigger: false
+
+      - .: (( inject meta-corporate-storage-coalescer.plan.terraform-bootstrap ))
+
+      - in_parallel:
+        - .: (( inject meta-corporate-storage-coalescer.plan.terraform-output-ingest ))
+          config:
+            params:
+              TF_WORKSPACE: default
+        - .: (( inject meta-corporate-storage-coalescer.plan.terraform-output-internal-compute ))
+          config:
+            params:
+              TF_WORKSPACE: default
+        - .: (( inject meta-corporate-storage-coalescer.plan.terraform-output-ingest-consumers ))
+          config:
+            params:
+              TF_WORKSPACE: default
+
+      - .: (( inject meta-corporate-storage-coalescer.plan.set-coalescer-parameters-all-partitions ))
+        task: set-coalescer-parameters-audit-storage
+        config:
+          params:
+            AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+            CORPORATE_STORAGE_TYPE: "audit"
+            FILE_TYPE: "storage"
+
+      - .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer-all-partitions ))
+        task: run-coalescer-audit-storage
+        config:
+          params:
+            AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+            CORPORATE_STORAGE_TYPE: "audit"
+            FILE_TYPE: "storage"
+
+      - .: (( inject meta-corporate-storage-coalescer.plan.set-coalescer-parameters-all-partitions ))
+        task: set-coalescer-parameters-equalities-storage
+        config:
+          params:
+            AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+            CORPORATE_STORAGE_TYPE: "equalities"
+            FILE_TYPE: "storage"
+
+      - .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer-all-partitions ))
+        task: run-coalescer-equalities-storage
+        config:
+          params:
+            AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+            CORPORATE_STORAGE_TYPE: "equalities"
+            FILE_TYPE: "storage"
+
+      - .: (( inject meta-corporate-storage-coalescer.plan.set-coalescer-parameters-all-partitions ))
+        task: set-coalescer-parameters-main-storage
+        config:
+          params:
+            AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+            CORPORATE_STORAGE_TYPE: "main"
+            FILE_TYPE: "storage"
+
+      - .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer-all-partitions ))
+        task: run-coalescer-main-storage
+        config:
+          params:
+            AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+            CORPORATE_STORAGE_TYPE: "main"
+            FILE_TYPE: "storage"
