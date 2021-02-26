@@ -1,0 +1,303 @@
+jobs:
+  - name: manifests-development-equalities-per-partition
+    max_in_flight: 1
+    plan:
+      - in_parallel:
+        - put: meta
+          resource: meta-development
+        - get: utc-1am
+          trigger: true
+        - get: dataworks-corporate-storage-coalescence
+          trigger: false
+        - get: aws-ingestion
+          trigger: false
+        - get: aws-internal-compute
+          trigger: false
+        - get: dataworks-aws-ingest-consumers
+          trigger: false
+
+      - .: (( inject meta-corporate-storage-coalescer.plan.terraform-bootstrap ))
+
+      - in_parallel:
+        - .: (( inject meta-corporate-storage-coalescer.plan.terraform-output-ingest ))
+          config:
+            params:
+              TF_WORKSPACE: default
+        - .: (( inject meta-corporate-storage-coalescer.plan.terraform-output-internal-compute ))
+          config:
+            params:
+              TF_WORKSPACE: default
+        - .: (( inject meta-corporate-storage-coalescer.plan.terraform-output-ingest-consumers ))
+          config:
+            params:
+              TF_WORKSPACE: default
+
+      - in_parallel:
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-zero ))
+          task: set-coalescer-parameters-equalities-manifests-partition-zero
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-one ))
+          task: set-coalescer-parameters-equalities-manifests-partition-one
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-two ))
+          task: set-coalescer-parameters-equalities-manifests-partition-two
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-three ))
+          task: set-coalescer-parameters-equalities-manifests-partition-three
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+
+      - in_parallel:
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-zero ))
+          task: run-coalescer-equalities-manifests-partition-zero
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-one ))
+          task: run-coalescer-equalities-manifests-partition-one
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-two ))
+          task: run-coalescer-equalities-manifests-partition-two
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-three ))
+          task: run-coalescer-equalities-manifests-partition-three
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+
+      - in_parallel:
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-four ))
+          task: set-coalescer-parameters-equalities-manifests-partition-four
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-five ))
+          task: set-coalescer-parameters-equalities-manifests-partition-five
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-six ))
+          task: set-coalescer-parameters-equalities-manifests-partition-six
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-seven ))
+          task: set-coalescer-parameters-equalities-manifests-partition-seven
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+
+      - in_parallel:
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-four ))
+          task: run-coalescer-equalities-manifests-partition-four
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-five ))
+          task: run-coalescer-equalities-manifests-partition-five
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-six ))
+          task: run-coalescer-equalities-manifests-partition-six
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-seven ))
+          task: run-coalescer-equalities-manifests-partition-seven
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+
+      - in_parallel:
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-eight ))
+          task: set-coalescer-parameters-equalities-manifests-partition-eight
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-nine ))
+          task: set-coalescer-parameters-equalities-manifests-partition-nine
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-ten ))
+          task: set-coalescer-parameters-equalities-manifests-partition-ten
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-eleven ))
+          task: set-coalescer-parameters-equalities-manifests-partition-eleven
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+
+      - in_parallel:
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-eight ))
+          task: run-coalescer-equalities-manifests-partition-eight
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-nine ))
+          task: run-coalescer-equalities-manifests-partition-nine
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-ten ))
+          task: run-coalescer-equalities-manifests-partition-ten
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-eleven ))
+          task: run-coalescer-equalities-manifests-partition-eleven
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+
+      - in_parallel:
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-twelve ))
+          task: set-coalescer-parameters-equalities-manifests-partition-twelve
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-thirteen ))
+          task: set-coalescer-parameters-equalities-manifests-partition-thirteen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-fourteen ))
+          task: set-coalescer-parameters-equalities-manifests-partition-fourteen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-fifteen ))
+          task: set-coalescer-parameters-equalities-manifests-partition-fifteen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+
+      - in_parallel:
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-sixteen ))
+          task: run-coalescer-equalities-manifests-partition-sixteen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-seventeen ))
+          task: run-coalescer-equalities-manifests-partition-seventeen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-eighteen ))
+          task: run-coalescer-equalities-manifests-partition-eighteen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-nineteen ))
+          task: run-coalescer-equalities-manifests-partition-nineteen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+
+      - in_parallel:
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-sixteen ))
+          task: run-coalescer-equalities-manifests-partition-sixteen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-seventeen ))
+          task: run-coalescer-equalities-manifests-partition-seventeen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-eighteen ))
+          task: run-coalescer-equalities-manifests-partition-eighteen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-nineteen ))
+          task: run-coalescer-equalities-manifests-partition-nineteen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+              CORPORATE_STORAGE_TYPE: "equalities"
+              FILE_TYPE: "manifests"

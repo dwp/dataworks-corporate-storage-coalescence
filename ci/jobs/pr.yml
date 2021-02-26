@@ -8,7 +8,7 @@ jobs:
         params:
           path: dataworks-corporate-storage-coalescence-pr
           status: pending
-      - .: (( inject meta.plan.terraform-bootstrap ))
+      - .: (( inject meta-corporate-storage-coalescer.plan.terraform-bootstrap ))
         input_mapping:
           dataworks-corporate-storage-coalescence: dataworks-corporate-storage-coalescence-pr
       - .: (( inject meta.plan.terraform-plan ))

@@ -5,8 +5,8 @@ resources:
       repository: dwp/dataworks-corporate-storage-coalescence
       access_token: ((dataworks-secrets.concourse_github_pat))
     webhook_token: ((dataworks.concourse_github_webhook_token))
-    check_every: 720h
-
+    check_every: 5m
+    
   - name: dataworks-corporate-storage-coalescence
     type: git
     source:
@@ -14,4 +14,4 @@ resources:
       uri: https://github.com/dwp/dataworks-corporate-storage-coalescence.git
       access_token: ((dataworks-secrets.concourse_github_pat))
     webhook_token: ((dataworks.concourse_github_webhook_token))
-    check_every: 720h
+    check_every: 5m
