@@ -88,4 +88,4 @@ jobs:
         with:
           command: monitor
           image: ${{ env.IMAGE_NAME }}
-          args: --file=./coalescer/Dockerfile --policy-path=./.snyk --org=dwp-dataworks
+          args: --file=./Dockerfile --policy-path=./.snyk --org=dwp-dataworks
