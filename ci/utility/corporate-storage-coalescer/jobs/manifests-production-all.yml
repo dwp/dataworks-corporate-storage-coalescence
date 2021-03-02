@@ -1,12 +1,12 @@
 jobs:
-  - name: storage-development-all
+  - name: manifests-production-all
     max_in_flight: 1
     plan:
       - in_parallel:
         - put: meta
-          resource: meta-development
-        # - get: utc-1am
-        #   trigger: true
+          resource: meta-production
+        - get: utc-1am
+          trigger: true
         - get: dataworks-corporate-storage-coalescence
           trigger: false
         - get: aws-ingestion
@@ -33,49 +33,49 @@ jobs:
               TF_WORKSPACE: default
 
       - .: (( inject meta-corporate-storage-coalescer.plan.set-coalescer-parameters-all-partitions ))
-        task: set-coalescer-parameters-audit-storage
+        task: set-coalescer-parameters-audit-manifests
         config:
           params:
-            AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+            AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
             CORPORATE_STORAGE_TYPE: "audit"
-            FILE_TYPE: "storage"
+            FILE_TYPE: "manifests"
 
       - .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer-all-partitions ))
-        task: run-coalescer-audit-storage
+        task: run-coalescer-audit-manifests
         config:
           params:
-            AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+            AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
             CORPORATE_STORAGE_TYPE: "audit"
-            FILE_TYPE: "storage"
+            FILE_TYPE: "manifests"
 
       - .: (( inject meta-corporate-storage-coalescer.plan.set-coalescer-parameters-all-partitions ))
-        task: set-coalescer-parameters-equalities-storage
+        task: set-coalescer-parameters-equalities-manifests
         config:
           params:
-            AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+            AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
             CORPORATE_STORAGE_TYPE: "equalities"
-            FILE_TYPE: "storage"
+            FILE_TYPE: "manifests"
 
       - .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer-all-partitions ))
-        task: run-coalescer-equalities-storage
+        task: run-coalescer-equalities-manifests
         config:
           params:
-            AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+            AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
             CORPORATE_STORAGE_TYPE: "equalities"
-            FILE_TYPE: "storage"
+            FILE_TYPE: "manifests"
 
       - .: (( inject meta-corporate-storage-coalescer.plan.set-coalescer-parameters-all-partitions ))
-        task: set-coalescer-parameters-main-storage
+        task: set-coalescer-parameters-main-manifests
         config:
           params:
-            AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+            AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
             CORPORATE_STORAGE_TYPE: "main"
-            FILE_TYPE: "storage"
+            FILE_TYPE: "manifests"
 
       - .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer-all-partitions ))
-        task: run-coalescer-main-storage
+        task: run-coalescer-main-manifests
         config:
           params:
-            AWS_ROLE_ARN: arn:aws:iam::((aws_account.development)):role/ci
+            AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
             CORPORATE_STORAGE_TYPE: "main"
-            FILE_TYPE: "storage"
+            FILE_TYPE: "manifests"

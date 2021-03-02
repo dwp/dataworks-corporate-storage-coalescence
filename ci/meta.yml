@@ -51,7 +51,7 @@ meta:
 
     terraform-apply:
       task: terraform-apply
-      .: (( inject meta-corporate-storage-coalescer.plan.terraform-common-config ))
+      .: (( inject meta.plan.terraform-common-config ))
       config:
         run:
           path: sh
@@ -70,7 +70,7 @@ meta:
           
     terraform-plan:
       task: terraform-plan
-      .: (( inject meta-corporate-storage-coalescer.plan.terraform-common-config ))
+      .: (( inject meta.plan.terraform-common-config ))
       config:
         run:
           path: sh

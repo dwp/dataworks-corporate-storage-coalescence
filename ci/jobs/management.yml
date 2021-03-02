@@ -6,7 +6,7 @@ jobs:
         trigger: true
         passed:
           - management-dev
-      - .: (( inject meta-corporate-storage-coalescer.plan.terraform-bootstrap ))
+      - .: (( inject meta.plan.terraform-bootstrap ))
       - .: (( inject meta.plan.terraform-apply ))
         params:
           TF_WORKSPACE: "management"
