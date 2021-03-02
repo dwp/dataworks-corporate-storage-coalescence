@@ -29,18 +29,18 @@ meta-corporate-storage-coalescer:
               set +x
 
               function set_parameters_for_job {
-                if [[ ! -z "${DATE_TO_RUN}" ]]; then
+                if [[ -z "${DATE_TO_RUN}" ]]; then
                   DATE_TO_RUN=$(date -d "$1" +'%Y/%m/%d')
                   echo "Defaulting to date of today, due to incoming date to run of '${DATE_TO_RUN}'"
                 fi
 
-                if [[ ! -z "${PARTITION_NUMBER}" ]]; then
-                  PARTITION_NUMBER="-1"
+                if [[ -z "${PARTITION_NUMBER}" ]]; then
+                  export PARTITION_NUMBER="-1"
                   echo "Defaulting to partition number of -1, which means not set due to incoming partition number of '${PARTITION_NUMBER}'"
                 fi
 
-                if [[ ! -z "${THREAD_COUNT}" ]]; then
-                  THREAD_COUNT="0"
+                if [[ -z "${THREAD_COUNT}" ]]; then
+                  export THREAD_COUNT="0"
                   echo "Defaulting to thread count of 0, which means not set due to incoming thread count of '${THREAD_COUNT}'"
                 fi
 
@@ -57,16 +57,16 @@ meta-corporate-storage-coalescer:
 
                 if [ "${CORPORATE_STORAGE_TYPE}" == "equalities" ]; then
                   echo "Setting equalities common variables"
-                  export MAX_SIZE_FILES=$(cat ../../terraform-output-ingest-consumers/outputs.json | jq -r '.k2hb_corporate_storage_coalesce_values.value.max_size_files.equalities')
-                  export MAX_SIZE_BYTES=$(cat ../../terraform-output-ingest-consumers/outputs.json | jq -r '.k2hb_corporate_storage_coalesce_values.value.max_size_bytes.equalities')
+                  export MAX_SIZE_FILES=$(cat ../terraform-output-ingest-consumers/outputs.json | jq -r '.k2hb_corporate_storage_coalesce_values.value.max_size_files.equalities')
+                  export MAX_SIZE_BYTES=$(cat ../terraform-output-ingest-consumers/outputs.json | jq -r '.k2hb_corporate_storage_coalesce_values.value.max_size_bytes.equalities')
                 elif [ "${CORPORATE_STORAGE_TYPE}" == "audit" ]; then
                   echo "Setting audit common variables"
-                  export MAX_SIZE_FILES=$(cat ../../terraform-output-ingest-consumers/outputs.json | jq -r '.k2hb_corporate_storage_coalesce_values.value.max_size_files.audit')
-                  export MAX_SIZE_BYTES=$(cat ../../terraform-output-ingest-consumers/outputs.json | jq -r '.k2hb_corporate_storage_coalesce_values.value.max_size_bytes.audit')
+                  export MAX_SIZE_FILES=$(cat ../terraform-output-ingest-consumers/outputs.json | jq -r '.k2hb_corporate_storage_coalesce_values.value.max_size_files.audit')
+                  export MAX_SIZE_BYTES=$(cat ../terraform-output-ingest-consumers/outputs.json | jq -r '.k2hb_corporate_storage_coalesce_values.value.max_size_bytes.audit')
                 elif [ "${CORPORATE_STORAGE_TYPE}" == "main" ]; then
                   echo "Setting main common variables"
-                  export MAX_SIZE_FILES=$(cat ../../terraform-output-ingest-consumers/outputs.json | jq -r '.k2hb_corporate_storage_coalesce_values.value.max_size_files.main')
-                  export MAX_SIZE_BYTES=$(cat ../../terraform-output-ingest-consumers/outputs.json | jq -r '.k2hb_corporate_storage_coalesce_values.value.max_size_bytes.main')
+                  export MAX_SIZE_FILES=$(cat ../terraform-output-ingest-consumers/outputs.json | jq -r '.k2hb_corporate_storage_coalesce_values.value.max_size_files.main')
+                  export MAX_SIZE_BYTES=$(cat ../terraform-output-ingest-consumers/outputs.json | jq -r '.k2hb_corporate_storage_coalesce_values.value.max_size_bytes.main')
                 else
                   echo "Exiting abnormally due to unrecognised corporate storage type of '${CORPORATE_STORAGE_TYPE}'"
                   exit 1
@@ -77,18 +77,18 @@ meta-corporate-storage-coalescer:
 
               function set_manifest_variables {
                 echo "Setting variables for manifests"
-                export S3_BUCKET_ID=$(cat ../../terraform-output-internal-compute/outputs.json | jq -r '.manifest_bucket.value.id')
+                export S3_BUCKET_ID=$(cat ../terraform-output-internal-compute/outputs.json | jq -r '.manifest_bucket.value.id')
                 echo "Set S3_BUCKET_ID to '${S3_BUCKET_ID}'"
 
                 if [ "${CORPORATE_STORAGE_TYPE}" == "equalities" ]; then
                   echo "Setting equalities base s3 prefix"
-                  export S3_BASE_PREFIX=$(cat ../../terraform-output-ingest/outputs.json | jq -r '.k2hb_manifest_write_locations.value.equality_prefix')
+                  export S3_BASE_PREFIX=$(cat ../terraform-output-ingest/outputs.json | jq -r '.k2hb_manifest_write_locations.value.equality_prefix')
                 elif [ "${CORPORATE_STORAGE_TYPE}" == "audit" ]; then
                   echo "Setting audit base s3 prefix"
-                  export S3_BASE_PREFIX=$(cat ../../terraform-output-ingest/outputs.json | jq -r '.k2hb_manifest_write_locations.value.audit_prefix')
+                  export S3_BASE_PREFIX=$(cat ../terraform-output-ingest/outputs.json | jq -r '.k2hb_manifest_write_locations.value.audit_prefix')
                 elif [ "${CORPORATE_STORAGE_TYPE}" == "main" ]; then
                   echo "Setting main base s3 prefix"
-                  export S3_BASE_PREFIX=$(cat ../../terraform-output-ingest/outputs.json | jq -r '.k2hb_manifest_write_locations.value.main_prefix')
+                  export S3_BASE_PREFIX=$(cat ../terraform-output-ingest/outputs.json | jq -r '.k2hb_manifest_write_locations.value.main_prefix')
                 else
                   echo "Exiting abnormally due to unrecognised corporate storage type of '${CORPORATE_STORAGE_TYPE}'"
                   exit 1
@@ -99,18 +99,18 @@ meta-corporate-storage-coalescer:
 
               function set_corporate_storage_variables {
                 echo "Setting variables for corporate storage"
-                export S3_BUCKET_ID=$(cat ../../terraform-output-ingest/outputs.json | jq -r '.corporate_storage_bucket.value.id')
+                export S3_BUCKET_ID=$(cat ../terraform-output-ingest/outputs.json | jq -r '.corporate_storage_bucket.value.id')
                 echo "Set S3_BUCKET_ID to '${S3_BUCKET_ID}'"
 
                 if [ "${CORPORATE_STORAGE_TYPE}" == "equalities" ]; then
                   echo "Setting equalities base s3 prefix"
-                  export S3_BASE_PREFIX=$(cat ../../terraform-output-ingest/outputs.json | jq -r '.corporate_data_loader.value.s3_base_prefix_equalities')
+                  export S3_BASE_PREFIX=$(cat ../terraform-output-ingest/outputs.json | jq -r '.corporate_data_loader.value.s3_base_prefix_equalities')
                 elif [ "${CORPORATE_STORAGE_TYPE}" == "audit" ]; then
                   echo "Setting audit base s3 prefix"
-                  export S3_BASE_PREFIX=$(cat ../../terraform-output-ingest/outputs.json | jq -r '.corporate_data_loader.value.s3_base_prefix_audit')
+                  export S3_BASE_PREFIX=$(cat ../terraform-output-ingest/outputs.json | jq -r '.corporate_data_loader.value.s3_base_prefix_audit')
                 elif [ "${CORPORATE_STORAGE_TYPE}" == "main" ]; then
                   echo "Setting main base s3 prefix"
-                  export S3_BASE_PREFIX=$(cat ../../terraform-output-ingest/outputs.json | jq -r '.corporate_data_loader.value.s3_base_prefix_ucfs')
+                  export S3_BASE_PREFIX=$(cat ../terraform-output-ingest/outputs.json | jq -r '.corporate_data_loader.value.s3_base_prefix_ucfs')
                 else
                   echo "Exiting abnormally due to unrecognised corporate storage type of '${CORPORATE_STORAGE_TYPE}'"
                   exit 1
@@ -158,15 +158,15 @@ meta-corporate-storage-coalescer:
           ASSUME_DURATION: 43200
           TIMEOUT: 43200
         run:
+          dir: job-parameters
           path: sh
           args:
             - -exc
             - |
               source /assume-role
-              set +x
 
               function set_job_parameters {
-                export JOB_PARAMETERS=$(cat ../job-parameters/parameters.txt)
+                export JOB_PARAMETERS=$(cat ./parameters.txt | sed -r 's/["]+/\"/g')
               }
 
               function submit_job {
@@ -174,11 +174,13 @@ meta-corporate-storage-coalescer:
                 job_name=`cat "../meta/build_job_name"`
                 build_number=`cat "../meta/build_name"`
                 build_number_safe=`echo ${build_number/./-}`
-                export JOB_ID=$(aws batch submit-job --job-queue batch_corporate_storage_coalescer \
-                  --job-definition batch_corporate_storage_coalescer_job \
-                  --job-name ${pipeline_name}_${job_name}_${build_number_safe} \
-                  --parameters "${JOB_PARAMETERS}" \
+                set +x
+                export JOB_ID=$(aws batch submit-job --job-queue "batch_corporate_storage_coalescer" \
+                  --job-definition "batch_corporate_storage_coalescer_job" \
+                  --job-name "${pipeline_name}_${job_name}_${build_number_safe}" \
+                  --parameters "${1}" \
                   | jq -e --raw-output .jobId)
+                set -x
               }
 
               function wait_for_job_completion {
@@ -225,23 +227,23 @@ meta-corporate-storage-coalescer:
 
               echo "Setting job parameters"
               set_job_parameters
-              if [[ -z "${JOB_ID}" ]]; then
+              if [[ -z "${JOB_PARAMETERS}" ]]; then
                 echo "Error retrieving job parameters"
                 exit 1
               fi
               echo "Job parameters set to '${JOB_PARAMETERS}'"
 
               echo "Submitting job"
-              submit_job
+              submit_job "${JOB_PARAMETERS}"
               if [[ -z "${JOB_ID}" ]]; then
                 echo "Error submitting job, empty JOB_ID received"
                 exit 1
               fi
-              echo "Submitted job with id of '${JOB_ID}"
+              echo "Submitted job with id of ${JOB_ID}"
 
-              echo "Waiting for job with id of '${JOB_ID}' to complete"
+              echo "Waiting for job with id of ${JOB_ID} to complete"
               wait_for_job_completion
-              echo "Job with id of '${JOB_ID}' completed successfully"
+              echo "Job with id of ${JOB_ID} completed successfully"
         inputs:
           - name: meta
           - name: job-parameters
