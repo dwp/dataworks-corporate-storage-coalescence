@@ -58,17 +58,5 @@ resources:
       stop: 1:05 AM
       location: UTC
 
-  - name: meta-development
+  - name: meta-production
     type: meta
-
-  # - name: meta-qa
-  #   type: meta
-
-  # - name: meta-integration
-  #   type: meta
-
-  # - name: meta-preprod
-  #   type: meta
-
-  # - name: meta-production
-  #   type: meta
