@@ -1,0 +1,18 @@
+groups:
+  - name: coalesce-production-storage
+    jobs:
+      - storage-production-all
+      - storage-production-audit-per-partition
+      - storage-production-equalities-per-partition
+      - storage-production-main-per-partition
+
+  - name: coalesce-production-manifests
+    jobs:
+      - manifests-production-all
+      - manifests-production-audit-per-partition
+      - manifests-production-equalities-per-partition
+      - manifests-production-main-per-partition
+
+  - name: update-pipeline
+    jobs:
+      - update-pipeline-corporate-storage-coalescer

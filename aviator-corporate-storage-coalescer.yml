@@ -1,0 +1,16 @@
+spruce:
+  - base: ci/utility/corporate-storage-coalescer/meta-corporate-storage-coalescer.yml
+    prune:
+      - meta
+    merge:
+      - with_in: ci/utility/corporate-storage-coalescer/
+        regexp: ".*.yml"
+      - with_in: ci/utility/corporate-storage-coalescer/jobs/
+        regexp: ".*.yml"
+    to: aviator_corporate_storage_coalescer_pipeline.yml
+fly:
+  name: corporate-storage-coalescer
+  target: utility
+  config: aviator_corporate_storage_coalescer_pipeline.yml
+  expose: true
+  check_creds: true

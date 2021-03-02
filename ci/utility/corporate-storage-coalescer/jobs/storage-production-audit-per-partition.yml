@@ -1,0 +1,331 @@
+jobs:
+  - name: storage-production-audit-per-partition
+    max_in_flight: 1
+    plan:
+      - in_parallel:
+        - put: meta
+          resource: meta-production
+        - get: dataworks-corporate-storage-coalescence
+          trigger: false
+        - get: aws-ingestion
+          trigger: false
+        - get: aws-internal-compute
+          trigger: false
+        - get: dataworks-aws-ingest-consumers
+          trigger: false
+
+      - .: (( inject meta-corporate-storage-coalescer.plan.terraform-bootstrap ))
+
+      - in_parallel:
+        - .: (( inject meta-corporate-storage-coalescer.plan.terraform-output-ingest ))
+          config:
+            params:
+              TF_WORKSPACE: production
+        - .: (( inject meta-corporate-storage-coalescer.plan.terraform-output-internal-compute ))
+          config:
+            params:
+              TF_WORKSPACE: production
+        - .: (( inject meta-corporate-storage-coalescer.plan.terraform-output-ingest-consumers ))
+          config:
+            params:
+              TF_WORKSPACE: production
+
+      - in_parallel:
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-zero ))
+          task: set-coalescer-parameters-audit-storage-partition-zero
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-one ))
+          task: set-coalescer-parameters-audit-storage-partition-one
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-two ))
+          task: set-coalescer-parameters-audit-storage-partition-two
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-three ))
+          task: set-coalescer-parameters-audit-storage-partition-three
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+
+      - in_parallel:
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-zero ))
+          task: run-coalescer-audit-storage-partition-zero
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-one ))
+          task: run-coalescer-audit-storage-partition-one
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-two ))
+          task: run-coalescer-audit-storage-partition-two
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-three ))
+          task: run-coalescer-audit-storage-partition-three
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+
+      - in_parallel:
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-four ))
+          task: set-coalescer-parameters-audit-storage-partition-four
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-five ))
+          task: set-coalescer-parameters-audit-storage-partition-five
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-six ))
+          task: set-coalescer-parameters-audit-storage-partition-six
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-seven ))
+          task: set-coalescer-parameters-audit-storage-partition-seven
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+
+      - in_parallel:
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-four ))
+          task: run-coalescer-audit-storage-partition-four
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-five ))
+          task: run-coalescer-audit-storage-partition-five
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-six ))
+          task: run-coalescer-audit-storage-partition-six
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-seven ))
+          task: run-coalescer-audit-storage-partition-seven
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+
+      - in_parallel:
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-eight ))
+          task: set-coalescer-parameters-audit-storage-partition-eight
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-nine ))
+          task: set-coalescer-parameters-audit-storage-partition-nine
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-ten ))
+          task: set-coalescer-parameters-audit-storage-partition-ten
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-eleven ))
+          task: set-coalescer-parameters-audit-storage-partition-eleven
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+
+      - in_parallel:
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-eight ))
+          task: run-coalescer-audit-storage-partition-eight
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-nine ))
+          task: run-coalescer-audit-storage-partition-nine
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-ten ))
+          task: run-coalescer-audit-storage-partition-ten
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-eleven ))
+          task: run-coalescer-audit-storage-partition-eleven
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+
+      - in_parallel:
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-twelve ))
+          task: set-coalescer-parameters-audit-storage-partition-twelve
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-thirteen ))
+          task: set-coalescer-parameters-audit-storage-partition-thirteen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-fourteen ))
+          task: set-coalescer-parameters-audit-storage-partition-fourteen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-fifteen ))
+          task: set-coalescer-parameters-audit-storage-partition-fifteen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+
+      - in_parallel:
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-twelve ))
+          task: run-coalescer-audit-storage-partition-twelve
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-thirteen ))
+          task: run-coalescer-audit-storage-partition-thirteen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-fourteen ))
+          task: run-coalescer-audit-storage-partition-fourteen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-fifteen ))
+          task: run-coalescer-audit-storage-partition-fifteen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+
+      - in_parallel:
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-sixteen ))
+          task: set-coalescer-parameters-audit-storage-partition-sixteen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-seventeen ))
+          task: set-coalescer-parameters-audit-storage-partition-seventeen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-eighteen ))
+          task: set-coalescer-parameters-audit-storage-partition-eighteen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-nineteen ))
+          task: set-coalescer-parameters-audit-storage-partition-nineteen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+
+      - in_parallel:
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-sixteen ))
+          task: run-coalescer-audit-storage-partition-sixteen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-seventeen ))
+          task: run-coalescer-audit-storage-partition-seventeen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-eighteen ))
+          task: run-coalescer-audit-storage-partition-eighteen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-nineteen ))
+          task: run-coalescer-audit-storage-partition-nineteen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "storage"

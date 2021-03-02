@@ -1,0 +1,181 @@
+meta-run-coalescer-per-partition:
+  plan:
+    run-coalescer-partition-zero:
+      task: run-coalescer-partition-zero
+      .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer ))
+      config:
+        params:
+          PARTITION_NUMBER: 0
+      input_mapping:
+        job-parameters: job-parameters-partition-zero
+
+    run-coalescer-partition-one:
+      task: run-coalescer-partition-one
+      .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer ))
+      config:
+        params:
+          PARTITION_NUMBER: 1
+      input_mapping:
+        job-parameters: job-parameters-partition-one
+
+    run-coalescer-partition-two:
+      task: run-coalescer-partition-two
+      .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer ))
+      config:
+        params:
+          PARTITION_NUMBER: 2
+      input_mapping:
+        job-parameters: job-parameters-partition-two
+
+    run-coalescer-partition-three:
+      task: run-coalescer-partition-three
+      .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer ))
+      config:
+        params:
+          PARTITION_NUMBER: 3
+      input_mapping:
+        job-parameters: job-parameters-partition-three
+
+    run-coalescer-partition-four:
+      task: run-coalescer-partition-four
+      .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer ))
+      config:
+        params:
+          PARTITION_NUMBER: 4
+      input_mapping:
+        job-parameters: job-parameters-partition-four
+
+    run-coalescer-partition-five:
+      task: run-coalescer-partition-five
+      .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer ))
+      config:
+        params:
+          PARTITION_NUMBER: 5
+      input_mapping:
+        job-parameters: job-parameters-partition-five
+
+    run-coalescer-partition-six:
+      task: run-coalescer-partition-six
+      .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer ))
+      config:
+        params:
+          PARTITION_NUMBER: 6
+      input_mapping:
+        job-parameters: job-parameters-partition-six
+
+    run-coalescer-partition-seven:
+      task: run-coalescer-partition-seven
+      .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer ))
+      config:
+        params:
+          PARTITION_NUMBER: 7
+      input_mapping:
+        job-parameters: job-parameters-partition-seven
+
+    run-coalescer-partition-eight:
+      task: run-coalescer-partition-eight
+      .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer ))
+      config:
+        params:
+          PARTITION_NUMBER: 8
+      input_mapping:
+        job-parameters: job-parameters-partition-eight
+
+    run-coalescer-partition-nine:
+      task: run-coalescer-partition-nine
+      .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer ))
+      config:
+        params:
+          PARTITION_NUMBER: 9
+      input_mapping:
+        job-parameters: job-parameters-partition-nine
+
+    run-coalescer-partition-ten:
+      task: run-coalescer-partition-ten
+      .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer ))
+      config:
+        params:
+          PARTITION_NUMBER: 10
+      input_mapping:
+        job-parameters: job-parameters-partition-ten
+
+    run-coalescer-partition-eleven:
+      task: run-coalescer-partition-eleven
+      .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer ))
+      config:
+        params:
+          PARTITION_NUMBER: 11
+      input_mapping:
+        job-parameters: job-parameters-partition-eleven
+
+    run-coalescer-partition-twelve:
+      task: run-coalescer-partition-twelve
+      .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer ))
+      config:
+        params:
+          PARTITION_NUMBER: 12
+      input_mapping:
+        job-parameters: job-parameters-partition-twelve
+
+    run-coalescer-partition-thirteen:
+      task: run-coalescer-partition-thirteen
+      .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer ))
+      config:
+        params:
+          PARTITION_NUMBER: 13
+      input_mapping:
+        job-parameters: job-parameters-partition-thirteen
+
+    run-coalescer-partition-fourteen:
+      task: run-coalescer-partition-fourteen
+      .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer ))
+      config:
+        params:
+          PARTITION_NUMBER: 14
+      input_mapping:
+        job-parameters: job-parameters-partition-fourteen
+
+    run-coalescer-partition-fifteen:
+      task: run-coalescer-partition-fifteen
+      .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer ))
+      config:
+        params:
+          PARTITION_NUMBER: 15
+      input_mapping:
+        job-parameters: job-parameters-partition-fifteen
+
+    run-coalescer-partition-sixteen:
+      task: run-coalescer-partition-sixteen
+      .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer ))
+      config:
+        params:
+          PARTITION_NUMBER: 16
+      input_mapping:
+        job-parameters: job-parameters-partition-sixteen
+
+    run-coalescer-partition-seventeen:
+      task: run-coalescer-partition-seventeen
+      .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer ))
+      config:
+        params:
+          PARTITION_NUMBER: 17
+      input_mapping:
+        job-parameters: job-parameters-partition-seventeen
+
+    run-coalescer-partition-eighteen:
+      task: run-coalescer-partition-eighteen
+      .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer ))
+      config:
+        params:
+          PARTITION_NUMBER: 18
+      input_mapping:
+        job-parameters: job-parameters-partition-eighteen
+
+    run-coalescer-partition-nineteen:
+      task: run-coalescer-partition-nineteen
+      .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer ))
+      config:
+        params:
+          PARTITION_NUMBER: 19
+      input_mapping:
+        job-parameters: job-parameters-partition-nineteen
