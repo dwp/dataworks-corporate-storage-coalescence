@@ -8,4 +8,4 @@ COPY coalescer/utility ./utility
 COPY coalescer/requirements.txt ./
 RUN pip install -r ./requirements.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org --user
 RUN chmod +x ./main.py
-CMD ["./main.py"]
+ENTRYPOINT ["python", "main.py"]
