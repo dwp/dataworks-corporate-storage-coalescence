@@ -241,29 +241,59 @@ jobs:
               FILE_TYPE: "manifests"
 
       - in_parallel:
-        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-sixteen ))
-          task: run-coalescer-audit-manifests-partition-sixteen
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-twelve ))
+          task: run-coalescer-audit-manifests-partition-twelve
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
               CORPORATE_STORAGE_TYPE: "audit"
               FILE_TYPE: "manifests"
-        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-seventeen ))
-          task: run-coalescer-audit-manifests-partition-seventeen
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-thirteen ))
+          task: run-coalescer-audit-manifests-partition-thirteen
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
               CORPORATE_STORAGE_TYPE: "audit"
               FILE_TYPE: "manifests"
-        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-eighteen ))
-          task: run-coalescer-audit-manifests-partition-eighteen
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-fourteen ))
+          task: run-coalescer-audit-manifests-partition-fourteen
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
               CORPORATE_STORAGE_TYPE: "audit"
               FILE_TYPE: "manifests"
-        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-nineteen ))
-          task: run-coalescer-audit-manifests-partition-nineteen
+        - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-fifteen ))
+          task: run-coalescer-audit-manifests-partition-fifteen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "manifests"
+
+      - in_parallel:
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-sixteen ))
+          task: set-coalescer-parameters-audit-manifests-partition-sixteen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-seventeen ))
+          task: set-coalescer-parameters-audit-manifests-partition-seventeen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-eighteen ))
+          task: set-coalescer-parameters-audit-manifests-partition-eighteen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "audit"
+              FILE_TYPE: "manifests"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-nineteen ))
+          task: set-coalescer-parameters-audit-manifests-partition-nineteen
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
