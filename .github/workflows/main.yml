@@ -74,7 +74,6 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           tags: "latest, ${{ needs.get-publish-version.outputs.publish-version }}"
           tag_semver: true
-          workdir: coalescer
 
   snyk-monitor:
     runs-on: ubuntu-latest
@@ -88,4 +87,4 @@ jobs:
         with:
           command: monitor
           image: ${{ env.IMAGE_NAME }}
-          args: --file=./coalescer/Dockerfile --policy-path=./.snyk --org=dwp-dataworks
+          args: --file=./Dockerfile --policy-path=./.snyk --org=dwp-dataworks
