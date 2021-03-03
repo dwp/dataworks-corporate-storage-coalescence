@@ -30,8 +30,11 @@ meta-corporate-storage-coalescer:
 
               function set_parameters_for_job {
                 if [[ -z "${DATE_TO_RUN}" ]]; then
-                  DATE_TO_RUN=$(date -d "yesterday" +'%Y/%m/%d')
+                  export DATE_TO_RUN=$(date -d "yesterday" +'%Y/%m/%d')
                   echo "Defaulting to date of yesterday, due to incoming date to run of '${DATE_TO_RUN}'"
+                elif [[ "${DATE_TO_RUN}" == "NOT_SET" ]]; then
+                  export DATE_TO_RUN=""
+                  echo "'${DATE_TO_RUN}' not set deliberately so will not be used"
                 fi
 
                 if [[ -z "${PARTITION_NUMBER}" ]]; then
@@ -93,6 +96,8 @@ meta-corporate-storage-coalescer:
                   echo "Exiting abnormally due to unrecognised corporate storage type of '${CORPORATE_STORAGE_TYPE}'"
                   exit 1
                 fi
+
+                export DATE_TO_RUN="NOT_SET"
 
                 echo "Set S3_BASE_PREFIX to '${S3_BASE_PREFIX}'"
               }
