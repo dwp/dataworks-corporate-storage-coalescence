@@ -30,8 +30,8 @@ meta-corporate-storage-coalescer:
 
               function set_parameters_for_job {
                 if [[ -z "${DATE_TO_RUN}" ]]; then
-                  DATE_TO_RUN=$(date -d "$1" +'%Y/%m/%d')
-                  echo "Defaulting to date of today, due to incoming date to run of '${DATE_TO_RUN}'"
+                  DATE_TO_RUN=$(date -d "yesterday" +'%Y/%m/%d')
+                  echo "Defaulting to date of yesterday, due to incoming date to run of '${DATE_TO_RUN}'"
                 fi
 
                 if [[ -z "${PARTITION_NUMBER}" ]]; then
