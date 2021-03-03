@@ -17,8 +17,8 @@ jobs:
             args:
               - -exc
               - |
-                sed -i 's/fly/nofly/' aviator-corporate-storage-coalescence.yml
-                /usr/bin/aviator -f aviator-corporate-storage-coalescence.yml
+                sed -i 's/fly/nofly/' aviator-corporate-storage-coalescer.yml
+                /usr/bin/aviator -f aviator-corporate-storage-coalescer.yml
                 mv aviator_corporate_storage_coalescence_pipeline.yml ../pipeline
             dir: dataworks-corporate-storage-coalescence
           inputs:
