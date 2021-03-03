@@ -5,8 +5,6 @@ import sys
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, wait
 from timeit import default_timer as timer
 
-from botocore.exceptions import ClientError
-
 from utility.grouping import batched_object_summaries, grouped_object_summaries, successful_result
 from utility.s3 import S3, s3_client
 
@@ -67,8 +65,9 @@ def coalesce_batch(s3, bucket, batch, manifests) -> bool:
         else:
             print("Not processing batch of size 1")
         return True
-    except ClientError as error:
-        print(f"Error coalescing batch: '{error}'.", file=sys.stderr)
+    except:
+        e = sys.exc_info()[0]
+        print(f"Error coalescing batch: '{e}'.", file=sys.stderr)
         return False
 
 
