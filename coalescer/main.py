@@ -67,8 +67,9 @@ def coalesce_batch(s3, bucket, batch, manifests) -> bool:
         else:
             print("Not processing batch of size 1")
         return True
-    except ClientError as error:
-        print(f"Error coalescing batch: '{error}'.", file=sys.stderr)
+    except:
+        e = sys.exc_info()[0]
+        print(f"Error coalescing batch: '{e}'.", file=sys.stderr)
         return False
 
 
