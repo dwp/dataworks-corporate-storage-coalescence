@@ -15,7 +15,7 @@ def main():
     client = s3_client(args.localstack)
     s3 = S3(client)
     print(f"Bucket: '{args.bucket}', prefix: '{args.prefix}', partition: {args.partition}, "
-          f"threads: {args.threads}, multiprocessor: {args.multiprocessor}.")
+          f"threads: {args.threads}, multiprocessor: {args.multiprocessor}, manifests: {args.manifests}.")
     summaries = s3.object_summaries(args.bucket, args.prefix)
     print(f"Fetch summaries, size {len(summaries)}")
     grouped = grouped_object_summaries(summaries, args.partition, args.manifests)
