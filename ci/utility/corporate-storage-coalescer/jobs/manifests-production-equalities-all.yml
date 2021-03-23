@@ -1,0 +1,48 @@
+jobs:
+  - name: manifests-production-equalities-all
+    max_in_flight: 1
+    plan:
+      - in_parallel:
+        - put: meta
+          resource: meta-production
+        - get: utc-1am
+          trigger: true
+        - get: dataworks-corporate-storage-coalescence
+          trigger: false
+        - get: aws-ingestion
+          trigger: false
+        - get: aws-internal-compute
+          trigger: false
+        - get: dataworks-aws-ingest-consumers
+          trigger: false
+
+      - .: (( inject meta-corporate-storage-coalescer.plan.terraform-bootstrap ))
+
+      - in_parallel:
+        - .: (( inject meta-corporate-storage-coalescer.plan.terraform-output-ingest ))
+          config:
+            params:
+              TF_WORKSPACE: production
+        - .: (( inject meta-corporate-storage-coalescer.plan.terraform-output-internal-compute ))
+          config:
+            params:
+              TF_WORKSPACE: production
+        - .: (( inject meta-corporate-storage-coalescer.plan.terraform-output-ingest-consumers ))
+          config:
+            params:
+              TF_WORKSPACE: production
+
+      - .: (( inject meta-corporate-storage-coalescer.plan.set-coalescer-parameters-all-partitions-equalities ))
+        task: set-coalescer-parameters-equalities-manifests
+        config:
+          params:
+            AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+            FILE_TYPE: "manifests"
+            THREAD_COUNT: 1
+
+      - .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer-all-partitions-equalities ))
+        task: run-coalescer-equalities-manifests
+        config:
+          params:
+            AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+            FILE_TYPE: "manifests"

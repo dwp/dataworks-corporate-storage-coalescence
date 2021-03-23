@@ -8,9 +8,8 @@ groups:
 
   - name: coalesce-production-manifests
     jobs:
-      - manifests-production-all
+      - manifests-production-equalities-all
       - manifests-production-audit-per-partition
-      - manifests-production-equalities-per-partition
       - manifests-production-main-per-partition
 
   - name: update-pipeline

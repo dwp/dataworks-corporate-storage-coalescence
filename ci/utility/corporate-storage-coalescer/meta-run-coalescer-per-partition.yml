@@ -104,7 +104,7 @@ meta-run-coalescer-per-partition:
       .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer ))
       config:
         params:
-          PARTITION_NUMBER: 11
+          PARTITION_NUMBER: 10
       input_mapping:
         job-parameters: job-parameters-partition-eleven
 
