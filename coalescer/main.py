@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import argparse
-import sys
 import traceback
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, wait
 from timeit import default_timer as timer
@@ -67,7 +66,7 @@ def coalesce_batch(s3, bucket, batch, manifests) -> bool:
             print("Not processing batch of size 1")
         return True
     except:
-        print(f"Error coalescing batch.")
+        print("Error coalescing batch.")
         traceback.print_exc()
         return False
 
