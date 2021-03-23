@@ -2,6 +2,7 @@
 
 import argparse
 import sys
+import traceback
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, wait
 from timeit import default_timer as timer
 
@@ -59,15 +60,15 @@ def coalesce_partition(bucket, partition, use_localstack: bool, manifests: bool)
 
 def coalesce_batch(s3, bucket, batch, manifests) -> bool:
     try:
-        if len(batch) > 1:
+        if batch and len(batch) > 1:
             s3.coalesce_batch(bucket, batch, manifests)
             s3.delete_batch(bucket, batch)
         else:
             print("Not processing batch of size 1")
         return True
     except:
-        e = sys.exc_info()[0]
-        print(f"Error coalescing batch: '{e}'.", file=sys.stderr)
+        print(f"Error coalescing batch.")
+        traceback.print_exc()
         return False
 
 
