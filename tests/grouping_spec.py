@@ -1,3 +1,4 @@
+import os
 import unittest
 from asyncio import Future
 
@@ -66,19 +67,36 @@ class GroupingSpec(unittest.TestCase):
             self.assertEqual([5], list(partition_batch.keys()))
             self.__validate_partitions(partition_batch, topic)
 
-    def __validate_partitions(self, partition_batch, topic):
+    def test_grouping_manifest_summaries_partition_zero(self):
+        object_summaries = self.__manifest_summaries()
+        result = grouped_object_summaries(object_summaries, 0, True)
+        self.assertEqual(["manifests"], list(result.keys()))
+        for topic in list(result.keys()):
+            partition_batch = result[topic]
+            self.assertEqual([0], list(partition_batch.keys()))
+            self.__validate_partitions(partition_batch, topic, True)
+
+    def __validate_partitions(self, partition_batch, topic, manifests = False):
         for partition in list(partition_batch.keys()):
             items = partition_batch[partition]
             for item in items:
-                self.assertEqual(topic, item['topic'])
+                if not manifests:
+                    self.assertEqual(topic, item['topic'])
+
                 self.assertEqual(partition, item['partition'])
                 start_offset = item['start_offset']
                 end_offset = item['end_offset']
                 collection = topic.replace("db.database.", "")
-                self.assertEqual(
-                    f"corporate_storage/ucfs_audit/2020/11/05/database/{collection}/"
-                    f"{topic}_{partition}_{start_offset}-{end_offset}.jsonl.gz",
-                    item['object_key'])
+                if manifests:
+                    self.assertEqual(
+                        f"business-data/manifest/streaming/main/"
+                        f"{item['start_topic']}_{partition}_{start_offset}-{item['end_topic']}_{partition}_{end_offset}.txt",
+                        item['object_key'])
+                else:
+                    self.assertEqual(
+                        f"corporate_storage/ucfs_audit/2020/11/05/database/{collection}/"
+                        f"{topic}_{partition}_{start_offset}-{end_offset}.jsonl.gz",
+                        item['object_key'])
 
     def __summaries(self):
         object_summaries = []
@@ -88,11 +106,28 @@ class GroupingSpec(unittest.TestCase):
                     object_summaries.append(self.__object_summary(collection, partition, i))
         return object_summaries
 
+    def __manifest_summaries(self):
+        object_summaries = []
+        for database in ["database1", "database2"]:
+            for collection in ["collection1", "collection2"]:
+                for partition in range(10):
+                    for i in range(100):
+                        object_summaries.append(self.__manifest_summary(database, collection, partition, i))
+        return object_summaries
+
     @staticmethod
     def __object_summary(collection: str, partition: int, i: int) -> dict:
         return {
             "Key": f"corporate_storage/ucfs_audit/2020/11/05/database/{collection}/"
                    f"db.database.{collection}_{partition}_{i * 100}-{i * 100 + 99}.jsonl.gz",
+            "Size": 100
+        }
+
+    @staticmethod
+    def __manifest_summary(database: str, collection: str, partition: int, i: int) -> dict:
+        return {
+            "Key": f"business-data/manifest/streaming/main/"
+                   f"db.{database}.{collection}_{partition}_{i * 100}-db.{database}.{collection}_{partition}_{i * 100 + 99}.txt",
             "Size": 100
         }
 

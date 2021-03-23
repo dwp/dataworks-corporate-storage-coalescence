@@ -5,7 +5,6 @@ from typing import Optional
 def grouped_object_summaries(summaries: list, partition_number: Optional[int], manifests: bool) -> dict:
     filename_re = re.compile(manifest_filename_pattern(partition_number) if manifests
                              else filename_pattern(partition_number))
-
     grouped = {}
     for summary in summaries:
         object_key = summary['Key']
@@ -47,14 +46,14 @@ def grouped_object_summaries(summaries: list, partition_number: Optional[int], m
     return grouped
 
 
-def filename_pattern(partition: int) -> str:
-    return r"/([.\w]+)_" + f"({partition})" + r"_(\d+)-(\d+)\.jsonl\.gz$" if partition and partition >= 0  \
-        else r"/([.\w]+)_(\d+)_(\d+)-(\d+)\.jsonl\.gz$"
+def filename_pattern(partition: Optional[int]) -> str:
+    return r"/([.\w]+)_(\d+)_(\d+)-(\d+)\.jsonl\.gz$" if partition is None \
+        else r"/([.\w]+)_" + f"({partition})" + r"_(\d+)-(\d+)\.jsonl\.gz$"
 
 
-def manifest_filename_pattern(partition: int) -> str:
-    return r"([-.\w]+)_" + f"({partition})" + r"_(\d+)-([-.\w]+)_" + f"{partition}" + r"_(\d+).txt" if partition and partition >= 0 \
-        else r"([-.\w]+)_(\d+)_(\d+)-([-.\w]+)_\d+_(\d+).txt"
+def manifest_filename_pattern(partition: Optional[int]) -> str:
+    return r"([-.\w]+)_(\d+)_(\d+)-([-.\w]+)_\d+_(\d+).txt" if partition is None \
+        else r"([-.\w]+)_" + f"({partition})" + r"_(\d+)-([-.\w]+)_" + f"{partition}" + r"_(\d+).txt"
 
 
 def batched_object_summaries(max_size: int,
