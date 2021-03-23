@@ -1,10 +1,31 @@
 meta-corporate-storage-coalescer:
   plan:
-    set-coalescer-parameters-all-partitions:
-      task: set-coalescer-parameters-all-partitions
+    set-coalescer-parameters-all-partitions-main:
+      task: set-coalescer-parameters-all-partitions-main
       .: (( inject meta-corporate-storage-coalescer.plan.set-coalescer-parameters ))
+      config:
+        params:
+          CORPORATE_STORAGE_TYPE: "main"
       output_mapping:
-        job-parameters: job-parameters-all-partitions
+        job-parameters: job-parameters-all-partitions-main
+
+    set-coalescer-parameters-all-partitions-audit:
+      task: set-coalescer-parameters-all-partitions-audit
+      .: (( inject meta-corporate-storage-coalescer.plan.set-coalescer-parameters ))
+      config:
+        params:
+          CORPORATE_STORAGE_TYPE: "audit"
+      output_mapping:
+        job-parameters: job-parameters-all-partitions-audit
+
+    set-coalescer-parameters-all-partitions-equalities:
+      task: set-coalescer-parameters-all-partitions-equalities
+      .: (( inject meta-corporate-storage-coalescer.plan.set-coalescer-parameters ))
+      config:
+        params:
+          CORPORATE_STORAGE_TYPE: "equalities"
+      output_mapping:
+        job-parameters: job-parameters-all-partitions-equalities
 
     set-coalescer-parameters:
       task: set-coalescer-parameters
@@ -35,16 +56,22 @@ meta-corporate-storage-coalescer:
                 elif [[ "${DATE_TO_RUN}" == "NOT_SET" ]]; then
                   export DATE_TO_RUN=""
                   echo "'${DATE_TO_RUN}' not set deliberately so will not be used"
+                else
+                  echo "Date to run set to '${DATE_TO_RUN}'"
                 fi
 
                 if [[ -z "${PARTITION_NUMBER}" ]]; then
                   export PARTITION_NUMBER="-1"
                   echo "Defaulting to partition number of -1, which means not set due to incoming partition number of '${PARTITION_NUMBER}'"
+                else
+                  echo "Partition number set to '${PARTITION_NUMBER}'"
                 fi
 
                 if [[ -z "${THREAD_COUNT}" ]]; then
                   export THREAD_COUNT="0"
                   echo "Defaulting to thread count of 0, which means not set due to incoming thread count of '${THREAD_COUNT}'"
+                else
+                  echo "Thread count set to '${THREAD_COUNT}'"
                 fi
 
                 echo "{\"s3-bucket-id\": \"${S3_BUCKET_ID}\", \
@@ -142,11 +169,32 @@ meta-corporate-storage-coalescer:
         outputs:
           - name: job-parameters
 
-    run-coalescer-all-partitions:
-      task: run-coalescer-all-partitions
+    run-coalescer-all-partitions-main:
+      task: run-coalescer-all-partitions-main
       .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer ))
+      config:
+        params:
+          CORPORATE_STORAGE_TYPE: "main"
       input_mapping:
-        job-parameters: job-parameters-all-partitions
+        job-parameters: job-parameters-all-partitions-main
+
+    run-coalescer-all-partitions-audit:
+      task: run-coalescer-all-partitions-audit
+      .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer ))
+      config:
+        params:
+          CORPORATE_STORAGE_TYPE: "audit"
+      input_mapping:
+        job-parameters: job-parameters-all-partitions-audit
+
+    run-coalescer-all-partitions-equalities:
+      task: run-coalescer-all-partitions-equalities
+      .: (( inject meta-corporate-storage-coalescer.plan.run-coalescer ))
+      config:
+        params:
+          CORPORATE_STORAGE_TYPE: "equalities"
+      input_mapping:
+        job-parameters: job-parameters-all-partitions-equalities
 
     run-coalescer:
       task: run-coalescer
@@ -175,13 +223,18 @@ meta-corporate-storage-coalescer:
               }
 
               function submit_job {
+                job_definition_name="batch_corporate_storage_coalescer_job_storage"
+                if [[ "${FILE_TYPE}" == "manifests" ]]; then
+                  job_definition_name="batch_corporate_storage_coalescer_job_manifests"
+                fi
+
                 pipeline_name=`cat "../meta/build_pipeline_name"`
                 job_name=`cat "../meta/build_job_name"`
                 build_number=`cat "../meta/build_name"`
                 build_number_safe=`echo ${build_number/./-}`
                 set +x
                 export JOB_ID=$(aws batch submit-job --job-queue "batch_corporate_storage_coalescer" \
-                  --job-definition "batch_corporate_storage_coalescer_job" \
+                  --job-definition "${job_definition_name}" \
                   --job-name "${pipeline_name}_${job_name}_${build_number_safe}" \
                   --parameters "${1}" \
                   | jq -e --raw-output .jobId)
