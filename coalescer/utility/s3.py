@@ -44,7 +44,7 @@ class S3:
         return objects
 
     def coalesce_batch(self, bucket: str, batch: list, manifests: bool):
-        if len(batch) > 0:
+        if batch and len(batch) > 0:
             start = timer()
             partition, start_offset, end_offset = batch[0]['partition'], batch[0]['start_offset'], batch[-1]['end_offset']
 
@@ -58,13 +58,14 @@ class S3:
             prefix = re.compile(r"/[^/]+$").sub("", batch[0]['object_key'])
             coalesced_key = self.__coalesced_key(bucket, f"{prefix}/{coalesced_filename}")
             coalesced_contents = self.__coalesced(bucket, batch, manifests)
-            self.__upload(bucket, coalesced_key, coalesced_contents)
-            end = timer()
-            print(f"Put coalesced batch into s3 {coalesced_key}, "
-                  f"size {len(coalesced_contents)}, time taken {end - start:.2f} seconds.")
+            if coalesced_contents:
+                self.__upload(bucket, coalesced_key, coalesced_contents)
+                end = timer()
+                print(f"Put coalesced batch into s3 {coalesced_key}, "
+                      f"size {len(coalesced_contents)}, time taken {end - start:.2f} seconds.")
 
     def delete_batch(self, bucket: str, batch: list):
-        if len(batch) > 0:
+        if batch and len(batch) > 0:
             start = timer()
             if len(batch) < self.MAX_DELETE_BATCH_SIZE + 1:
                 deletes = [{'Key': item['object_key']} for item in batch]
@@ -75,16 +76,18 @@ class S3:
                                for i in range(0, len(batch),
                                               self.MAX_DELETE_BATCH_SIZE)]
                 for sub_batch in sub_batches:
-                    print(f"Processing sub-batch: {len(sub_batch)}")
-                    self.delete_batch(bucket, sub_batch)
+                    if sub_batch:
+                        print(f"Processing sub-batch: {len(sub_batch)}")
+                        self.delete_batch(bucket, sub_batch)
             end = timer()
             print(f"Deleted batch of {len(batch)} items, time taken {end - start:.2f} seconds.")
 
     def __upload(self, bucket, key, contents):
-        start = timer()
-        self.client.upload_fileobj(io.BytesIO(contents), bucket, key)
-        end = timer()
-        print(f"Uploaded {bucket}/{key}, size {len(contents)} time taken {end - start:.2f} seconds.")
+        if contents:
+            start = timer()
+            self.client.upload_fileobj(io.BytesIO(contents), bucket, key)
+            end = timer()
+            print(f"Uploaded {bucket}/{key}, size {len(contents)} time taken {end - start:.2f} seconds.")
 
     def __coalesced(self, bucket: str, batch: list, manifests: bool) -> bytes:
         start = timer()
@@ -105,9 +108,11 @@ class S3:
         for contents in sorted_contents:
             coalesced = contents if not coalesced else coalesced + contents
         end = timer()
-        print(f"Fetched and coalesced batch of {len(batch)} items, "
-              f"size {len(coalesced)}, "
-              f"time taken {end - start:.2f} seconds.")
+
+        if coalesced:
+            print(f"Fetched and coalesced batch of {len(batch)} items, "
+                  f"size {len(coalesced)}, "
+                  f"time taken {end - start:.2f} seconds.")
         return coalesced
 
     def __uncoalesced_objects(self, bucket, batch):
