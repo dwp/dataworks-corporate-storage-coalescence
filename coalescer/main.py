@@ -17,20 +17,28 @@ def main():
     s3 = S3(client)
     print(f"Bucket: '{args.bucket}', prefix: '{args.prefix}', partition: {args.partition}, "
           f"threads: {args.threads}, multiprocessor: {args.multiprocessor}, manifests: {args.manifests}.")
-    summaries = s3.object_summaries(args.bucket, args.prefix)
+    results = [coalesce_tranche(args, summaries) for summaries in
+               s3.object_summaries(args.bucket, args.prefix, args.summaries)]
+    end = timer()
+    print(f"Total time taken: {end - start:.2f} seconds.")
+    exit(0 if all(results) else 1)
+
+
+def coalesce_tranche(args, summaries):
+    start = timer()
     print(f"Fetch summaries, size {len(summaries)}")
     grouped = grouped_object_summaries(summaries, args.partition, args.manifests)
     print(f"Grouped, size {len(grouped)}")
     batched = batched_object_summaries(args.size, args.files, grouped)
     print("Created batches, coalescing")
-    results = [coalesce_topic(args.bucket, batched[topic], args.threads, args.multiprocessor, args.localstack, args.manifests)
-               for topic in batched.keys()]
+    results = [
+        coalesce_topic(args.bucket, batched[topic], args.threads, args.multiprocessor, args.localstack, args.manifests)
+        for topic in batched.keys()]
     for result in results:
         print(f"Result: {result}")
     end = timer()
     print(f"Time taken: {end - start:.2f} seconds.")
-
-    exit(0 if successful_result(results) else 2)
+    return successful_result(results)
 
 
 def coalesce_topic(bucket: str, batched_topic, threads: int, use_multiprocessor, use_localstack: bool, manifests: bool):
@@ -50,7 +58,8 @@ def coalesce_topic(bucket: str, batched_topic, threads: int, use_multiprocessor,
 
 def pooled_executor(multiprocessor, threads):
     threads_qualified = threads if threads and threads > 0 else None
-    return ProcessPoolExecutor(max_workers=threads_qualified) if multiprocessor else ThreadPoolExecutor(max_workers=threads_qualified)
+    return ProcessPoolExecutor(max_workers=threads_qualified) if multiprocessor else ThreadPoolExecutor(
+        max_workers=threads_qualified)
 
 
 def coalesce_partition(bucket, partition, use_localstack: bool, manifests: bool):
@@ -77,15 +86,16 @@ def command_line_args():
     parser = \
         argparse.ArgumentParser(description='Coalesces corporate data files.')
 
+    parser.add_argument('-a', '--manifests', default=False,
+                        action="store_true",
+                        help='Coalesces streaming manifests.')
+
     parser.add_argument('-b', '--bucket', default="corporate-data", type=str,
                         help='The target bucket.')
 
     parser.add_argument('-f', '--files', default=10, type=int,
                         help='The maximum number of files '
                              'to coalesce into one.')
-
-    parser.add_argument('-s', '--size', default=100_000, type=int,
-                        help='The maximum size in bytes of a coalesced file.')
 
     parser.add_argument('-l', '--localstack', default=False,
                         action="store_true",
@@ -107,15 +117,19 @@ def command_line_args():
                         type=str,
                         help='The common prefix.')
 
-    parser.add_argument('-a', '--manifests', default=False,
-                        action="store_true",
-                        help='Coalesces streaming manifests.')
+    parser.add_argument('-s', '--size', default=100_000, type=int,
+                        help='The maximum size in bytes of a coalesced file.')
 
     parser.add_argument('-t', '--threads',
                         choices=range(0, 11),
                         default=0,
                         type=int,
                         help='The number of coalescing threads to run in parallel.')
+
+    parser.add_argument('-u', '--summaries',
+                        default=500000,
+                        type=int,
+                        help='How many s3 objects to summaries to fetch at a time.')
 
     return parser.parse_args()
 

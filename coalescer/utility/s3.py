@@ -19,7 +19,7 @@ class S3:
     def __init__(self, client):
         self.client = client
 
-    def object_summaries(self, bucket: str, prefix: str):
+    def object_summaries(self, bucket: str, prefix: str, batch_size: int):
         objects = []
         all_retrieved = False
         token = None
@@ -42,9 +42,13 @@ class S3:
                 objects += [{"Key": x['Key'], "Size": x['Size']} for x in results['Contents']]
 
             print(f"Fetched {len(objects)} summaries from {bucket}/{prefix}.")
+            if len(objects) > batch_size:
+                yield objects
+                objects = []
+
             all_retrieved = not truncated
 
-        return objects
+        yield objects
 
     def coalesce_batch(self, bucket: str, batch: list, manifests: bool):
         if batch and len(batch) > 0:

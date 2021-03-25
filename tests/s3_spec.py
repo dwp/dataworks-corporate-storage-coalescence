@@ -42,7 +42,9 @@ class S3Spec(unittest.TestCase):
         expected = reduce(lambda acc, xs: acc + xs, contents)
         objects[-1]['IsTruncated'] = False
         client.list_objects_v2 = Mock(side_effect=objects)
-        actual = s3.object_summaries(self.bucket, 'prefix')
+        actual = []
+        for sub_batch in s3.object_summaries(self.bucket, 'prefix', 5):
+            actual += sub_batch
         self.assertEqual(expected, actual)
 
     def test_batches_are_deleted(self):
