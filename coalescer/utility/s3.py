@@ -38,7 +38,10 @@ class S3:
             token = results['NextContinuationToken'] \
                 if 'NextContinuationToken' in results else None
 
-            objects += results['Contents'] if 'Contents' in results else []
+            if 'Contents' in results:
+                objects += [{"Key": x['Key'], "Size": x['Size']} for x in results['Contents']]
+
+            print(f"Fetched {len(objects)} summaries from {bucket}/{prefix}.")
             all_retrieved = not truncated
 
         return objects

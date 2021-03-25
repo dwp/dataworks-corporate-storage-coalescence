@@ -2,6 +2,7 @@
 
 import argparse
 import traceback
+
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, wait
 from timeit import default_timer as timer
 
@@ -28,6 +29,7 @@ def main():
         print(f"Result: {result}")
     end = timer()
     print(f"Time taken: {end - start:.2f} seconds.")
+
     exit(0 if successful_result(results) else 2)
 
 

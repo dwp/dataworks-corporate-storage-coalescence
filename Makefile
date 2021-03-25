@@ -58,6 +58,12 @@ s3-clear-corporate:
 
 s3-clear: s3-clear-manifest s3-clear-corporate
 
+repopulate: s3-clear
+	@{ \
+		cd containers/localstack; \
+		./run.sh; \
+	}
+
 s3-list:
 	awslocal s3 ls --recursive s3://corporate-data
 
