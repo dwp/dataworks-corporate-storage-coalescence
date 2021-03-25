@@ -49,8 +49,7 @@ class S3:
     def coalesce_batch(self, bucket: str, batch: list, manifests: bool):
         if batch and len(batch) > 0:
             start = timer()
-            partition, start_offset, end_offset = batch[0]['partition'], batch[0]['start_offset'], batch[-1][
-                'end_offset']
+            partition, start_offset, end_offset = batch[0]['partition'], batch[0]['start_offset'], batch[-1]['end_offset']
 
             start_topic = batch[0]['start_topic'] if 'start_topic' in batch[0] else None
             end_topic = batch[-1]['end_topic'] if 'end_topic' in batch[-1] else None
