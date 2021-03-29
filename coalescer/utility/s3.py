@@ -41,8 +41,8 @@ class S3:
             if 'Contents' in results:
                 objects += [{"Key": x['Key'], "Size": x['Size']} for x in results['Contents']]
 
-            print(f"Fetched {len(objects)} summaries from {bucket}/{prefix}.")
             if len(objects) > batch_size:
+                print(f"Fetched {len(objects)} summaries from {bucket}/{prefix}.")
                 yield objects
                 objects = []
 

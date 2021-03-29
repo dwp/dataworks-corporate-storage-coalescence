@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
 
 ./main.py -lm
-./main.py -lma -b manifest-data -p business-data/manifest/streaming/main
+
+for partition in {0..9}; do
+  ./main.py -lma -b manifest-data -n $partition -p business-data/manifest/streaming/main
+done

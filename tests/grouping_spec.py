@@ -8,10 +8,10 @@ from utility.grouping import batched_object_summaries, grouped_object_summaries,
 class GroupingSpec(unittest.TestCase):
 
     def test_successful_resolved_results(self):
-        self.assertEqual(True, successful_result(self.__generators()))
+        self.assertEqual(True, successful_result(self.__generators(), False))
 
     def test_failed_resolved_results(self):
-        self.assertEqual(False, successful_result(self.__generators(with_failure=True)))
+        self.assertEqual(False, successful_result(self.__generators(with_failure=True), False))
 
     @staticmethod
     def __future(has_failure=False):

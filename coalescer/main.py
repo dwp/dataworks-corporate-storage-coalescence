@@ -2,7 +2,6 @@
 
 import argparse
 import traceback
-
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, wait
 from timeit import default_timer as timer
 
@@ -32,28 +31,45 @@ def coalesce_tranche(args, summaries):
     batched = batched_object_summaries(args.size, args.files, grouped)
     print("Created batches, coalescing")
     results = [
-        coalesce_topic(args.bucket, batched[topic], args.threads, args.multiprocessor, args.localstack, args.manifests)
+        coalesce_topic(args.bucket, batched[topic], args.threads, args.multiprocessor, args.localstack,
+                       args.manifests, args.partition != -1)
         for topic in batched.keys()]
     for result in results:
         print(f"Result: {result}")
     end = timer()
     print(f"Time taken: {end - start:.2f} seconds.")
-    return successful_result(results)
+    return successful_result(results, args.partition != -1)
 
 
-def coalesce_topic(bucket: str, batched_topic, threads: int, use_multiprocessor, use_localstack: bool, manifests: bool):
-    with (pooled_executor(use_multiprocessor, threads)) as executor:
-        start = timer()
-        futures = [executor.submit(coalesce_partition, bucket, batched_topic[partition], use_localstack, manifests)
-                   for partition in batched_topic]
-        for future in futures:
-            print(f"Future: {future}")
+def coalesce_topic(bucket: str, batched_topic, threads: int, use_multiprocessor, use_localstack: bool, manifests: bool,
+                   parallelise_batches: bool):
+    if parallelise_batches:
+        with pooled_executor(use_multiprocessor, threads) as executor:
+            for partition_batch in batched_topic:
+                start = timer()
+                futures = [executor.submit(coalesce_batch_parallel, bucket, batch, manifests, use_localstack) for batch
+                           in batched_topic[partition_batch]]
+                for future in futures:
+                    print(f"Future: {future}")
+                wait(futures)
+                executor.shutdown()
+                end = timer()
+                print(f"Done all batches, time taken {end - start:.2f} seconds.")
+                return futures
 
-        wait(futures)
-        executor.shutdown()
-        end = timer()
-        print(f"Done all batches, time taken {end - start:.2f} seconds.")
-        return futures
+    else:
+        with (pooled_executor(use_multiprocessor, threads)) as executor:
+            start = timer()
+            futures = [executor.submit(coalesce_partition, bucket, batched_topic[partition], use_localstack, manifests)
+                       for partition in batched_topic]
+            for future in futures:
+                print(f"Future: {future}")
+
+            wait(futures)
+            executor.shutdown()
+            end = timer()
+            print(f"Done all batches, time taken {end - start:.2f} seconds.")
+            return futures
 
 
 def pooled_executor(multiprocessor, threads):
@@ -68,7 +84,11 @@ def coalesce_partition(bucket, partition, use_localstack: bool, manifests: bool)
     return [coalesce_batch(s3, bucket, batch, manifests) for batch in partition]
 
 
-def coalesce_batch(s3, bucket, batch, manifests) -> bool:
+def coalesce_batch_parallel(bucket, batch, manifests, use_localstack: bool) -> bool:
+    return coalesce_batch(S3(s3_client(use_localstack)), bucket, batch, manifests)
+
+
+def coalesce_batch(s3, bucket, batch, manifests: bool) -> bool:
     try:
         if batch and len(batch) > 1:
             s3.coalesce_batch(bucket, batch, manifests)
@@ -92,6 +112,9 @@ def command_line_args():
 
     parser.add_argument('-b', '--bucket', default="corporate-data", type=str,
                         help='The target bucket.')
+
+    parser.add_argument('-c', '--parallelise-batches', default=False, type=bool,
+                        help='Run batches in parallel.')
 
     parser.add_argument('-f', '--files', default=10, type=int,
                         help='The maximum number of files '
@@ -127,7 +150,7 @@ def command_line_args():
                         help='The number of coalescing threads to run in parallel.')
 
     parser.add_argument('-u', '--summaries',
-                        default=500000,
+                        default=2000000,
                         type=int,
                         help='How many s3 objects to summaries to fetch at a time.')
 
