@@ -1,4 +1,6 @@
 import re
+import sys
+import traceback
 from typing import Optional
 
 
@@ -61,8 +63,10 @@ def batched_object_summaries(max_size: int,
                              grouped: dict) -> dict:
     batches = {}
     for topic in grouped.keys():
+        print(f"Creating batches for {topic}")
         batches[topic] = {}
         for partition in grouped[topic].keys():
+            print(f"Creating batches for {topic}/{partition}")
             current_batch, current_batch_size, current_batch_count = [], 0, 0
             objects = grouped[topic][partition]
             batches[topic][partition] = []
@@ -74,25 +78,28 @@ def batched_object_summaries(max_size: int,
                 if current_batch_size >= max_size or \
                         current_batch_count >= max_count:
                     batches[topic][partition].append(current_batch)
+                    print(f"Appending batch of size {len(current_batch)} to {topic}/{partition}, no. of batches is {len(batches[topic][partition])}")
                     current_batch, current_batch_size, current_batch_count = \
                         [], 0, 0
 
             if len(current_batch) > 0:
                 batches[topic][partition].append(current_batch)
+                print(f"Appending batch of size {len(current_batch)} to {topic}/{partition}, no. of batches is {len(batches[topic][partition])}")
 
     return batches
 
 
-def successful_result(results):
+def successful_result(results, parallel_batches):
     all_succeeded = True
     for futures in results:
         for future in futures:
             try:
                 result = future.result()
-                failures_exist = any(x is False for x in result)
+                failures_exist = result if parallel_batches else any(x is False for x in result)
                 if failures_exist:
                     all_succeeded = False
             except:
+                traceback.print_exc(file=sys.stdout)
                 print(f"Future failed with exception: '{future.exception()}'")
                 all_succeeded = False
 
