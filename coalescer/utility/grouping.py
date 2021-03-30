@@ -95,7 +95,7 @@ def successful_result(results, parallel_batches):
         for future in futures:
             try:
                 result = future.result()
-                failures_exist = result if parallel_batches else any(x is False for x in result)
+                failures_exist = not result if parallel_batches else any(x is False for x in result)
                 if failures_exist:
                     all_succeeded = False
             except:
