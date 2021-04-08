@@ -4,15 +4,23 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from timeit import default_timer as timer
 
 import boto3
+import botocore
 
 
 def s3_client(use_localstack: bool):
+    max_attempts = 4 if use_localstack else 25
+    config = botocore.config.Config(
+        retries={
+            'max_attempts': max_attempts,
+            'mode': 'standard'
+        }
+    )
     return boto3.client(service_name="s3",
                         endpoint_url="http://localstack:4566",
                         use_ssl=False,
                         aws_access_key_id="ACCESS_KEY",
                         aws_secret_access_key="SECRET_KEY") if use_localstack \
-        else boto3.client(service_name="s3")
+        else boto3.client(service_name="s3", config=config)
 
 
 class S3:
