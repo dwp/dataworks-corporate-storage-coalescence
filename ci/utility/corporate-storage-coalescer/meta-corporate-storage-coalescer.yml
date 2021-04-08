@@ -225,7 +225,11 @@ meta-corporate-storage-coalescer:
               function submit_job {
                 job_definition_name="batch_corporate_storage_coalescer_job_storage"
                 if [[ "${FILE_TYPE}" == "manifests" ]]; then
-                  job_definition_name="batch_corporate_storage_coalescer_job_manifests"
+                  if [[ "${CORPORATE_STORAGE_TYPE}" == "audit" ]]; then
+                    job_definition_name="batch_corporate_storage_coalescer_job_manifests_audit"
+                  else
+                    job_definition_name="batch_corporate_storage_coalescer_job_manifests"
+                  fi
                 fi
 
                 pipeline_name=`cat "../meta/build_pipeline_name"`

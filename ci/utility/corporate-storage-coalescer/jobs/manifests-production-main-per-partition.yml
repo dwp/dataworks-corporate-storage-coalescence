@@ -40,7 +40,6 @@ jobs:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
               CORPORATE_STORAGE_TYPE: "main"
               FILE_TYPE: "manifests"
-              THREAD_COUNT: 5
         - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-one ))
           task: set-coalescer-parameters-main-manifests-partition-one
           config:
@@ -48,7 +47,6 @@ jobs:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
               CORPORATE_STORAGE_TYPE: "main"
               FILE_TYPE: "manifests"
-              THREAD_COUNT: 5
         - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-two ))
           task: set-coalescer-parameters-main-manifests-partition-two
           config:
@@ -56,7 +54,6 @@ jobs:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
               CORPORATE_STORAGE_TYPE: "main"
               FILE_TYPE: "manifests"
-              THREAD_COUNT: 5
         - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-three ))
           task: set-coalescer-parameters-main-manifests-partition-three
           config:
@@ -64,7 +61,6 @@ jobs:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
               CORPORATE_STORAGE_TYPE: "main"
               FILE_TYPE: "manifests"
-              THREAD_COUNT: 5
         - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-four ))
           task: set-coalescer-parameters-main-manifests-partition-four
           config:
@@ -72,7 +68,6 @@ jobs:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
               CORPORATE_STORAGE_TYPE: "main"
               FILE_TYPE: "manifests"
-              THREAD_COUNT: 5
         - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-five ))
           task: set-coalescer-parameters-main-manifests-partition-five
           config:
@@ -80,7 +75,6 @@ jobs:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
               CORPORATE_STORAGE_TYPE: "main"
               FILE_TYPE: "manifests"
-              THREAD_COUNT: 5
         - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-six ))
           task: set-coalescer-parameters-main-manifests-partition-six
           config:
@@ -88,7 +82,6 @@ jobs:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
               CORPORATE_STORAGE_TYPE: "main"
               FILE_TYPE: "manifests"
-              THREAD_COUNT: 5
         - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-seven ))
           task: set-coalescer-parameters-main-manifests-partition-seven
           config:
@@ -96,7 +89,6 @@ jobs:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
               CORPORATE_STORAGE_TYPE: "main"
               FILE_TYPE: "manifests"
-              THREAD_COUNT: 5
         - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-eight ))
           task: set-coalescer-parameters-main-manifests-partition-eight
           config:
@@ -104,7 +96,6 @@ jobs:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
               CORPORATE_STORAGE_TYPE: "main"
               FILE_TYPE: "manifests"
-              THREAD_COUNT: 5
         - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-nine ))
           task: set-coalescer-parameters-main-manifests-partition-nine
           config:
@@ -112,7 +103,6 @@ jobs:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
               CORPORATE_STORAGE_TYPE: "main"
               FILE_TYPE: "manifests"
-              THREAD_COUNT: 5
         - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-ten ))
           task: set-coalescer-parameters-main-manifests-partition-ten
           config:
@@ -120,7 +110,6 @@ jobs:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
               CORPORATE_STORAGE_TYPE: "main"
               FILE_TYPE: "manifests"
-              THREAD_COUNT: 5
         - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-eleven ))
           task: set-coalescer-parameters-main-manifests-partition-eleven
           config:
@@ -128,7 +117,6 @@ jobs:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
               CORPORATE_STORAGE_TYPE: "main"
               FILE_TYPE: "manifests"
-              THREAD_COUNT: 5
 
       - in_parallel:
         - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-zero ))
@@ -224,7 +212,6 @@ jobs:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
               CORPORATE_STORAGE_TYPE: "main"
               FILE_TYPE: "manifests"
-              THREAD_COUNT: 5
         - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-thirteen ))
           task: set-coalescer-parameters-main-manifests-partition-thirteen
           config:
@@ -232,7 +219,6 @@ jobs:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
               CORPORATE_STORAGE_TYPE: "main"
               FILE_TYPE: "manifests"
-              THREAD_COUNT: 5
         - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-fourteen ))
           task: set-coalescer-parameters-main-manifests-partition-fourteen
           config:
@@ -240,7 +226,6 @@ jobs:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
               CORPORATE_STORAGE_TYPE: "main"
               FILE_TYPE: "manifests"
-              THREAD_COUNT: 5
         - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-fifteen ))
           task: set-coalescer-parameters-main-manifests-partition-fifteen
           config:
@@ -248,7 +233,6 @@ jobs:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
               CORPORATE_STORAGE_TYPE: "main"
               FILE_TYPE: "manifests"
-              THREAD_COUNT: 5
         - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-sixteen ))
           task: set-coalescer-parameters-main-manifests-partition-sixteen
           config:
@@ -256,7 +240,6 @@ jobs:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
               CORPORATE_STORAGE_TYPE: "main"
               FILE_TYPE: "manifests"
-              THREAD_COUNT: 5
         - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-seventeen ))
           task: set-coalescer-parameters-main-manifests-partition-seventeen
           config:
@@ -264,7 +247,6 @@ jobs:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
               CORPORATE_STORAGE_TYPE: "main"
               FILE_TYPE: "manifests"
-              THREAD_COUNT: 5
         - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-eighteen ))
           task: set-coalescer-parameters-main-manifests-partition-eighteen
           config:
@@ -272,7 +254,6 @@ jobs:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
               CORPORATE_STORAGE_TYPE: "main"
               FILE_TYPE: "manifests"
-              THREAD_COUNT: 5
         - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-nineteen ))
           task: set-coalescer-parameters-main-manifests-partition-nineteen
           config:
@@ -280,7 +261,6 @@ jobs:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
               CORPORATE_STORAGE_TYPE: "main"
               FILE_TYPE: "manifests"
-              THREAD_COUNT: 5
 
       - in_parallel:
         - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-twelve ))
