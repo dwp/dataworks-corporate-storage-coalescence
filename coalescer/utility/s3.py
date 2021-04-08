@@ -4,12 +4,13 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from timeit import default_timer as timer
 
 import boto3
+import botocore
 
 
 def s3_client(use_localstack: bool):
     max_attempts = 4 if use_localstack else 25
-    config = Config(
-        retries = {
+    config = botocore.config.Config(
+        retries={
             'max_attempts': max_attempts,
             'mode': 'standard'
         }
