@@ -292,6 +292,13 @@ jobs:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
               CORPORATE_STORAGE_TYPE: "main"
               FILE_TYPE: "storage"
+        - .: (( inject meta-set-parameters-per-partition.plan.set-coalescer-parameters-partition-nineteen ))
+          task: set-coalescer-parameters-main-storage-partition-nineteen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "main"
+              FILE_TYPE: "storage"
 
       - in_parallel:
         - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-sixteen ))
@@ -310,6 +317,12 @@ jobs:
               FILE_TYPE: "storage"
         - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-eighteen ))
           task: run-coalescer-main-storage-partition-eighteen
+          config:
+            params:
+              AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
+              CORPORATE_STORAGE_TYPE: "main"
+              FILE_TYPE: "storage"
+          task: run-coalescer-main-storage-partition-nineteen
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
