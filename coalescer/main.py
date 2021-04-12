@@ -129,7 +129,7 @@ def command_line_args():
                         help='Use the process pool executor.')
 
     parser.add_argument('-n', '--partition',
-                        choices=range(-1, 19),
+                        choices=range(-1, 20),
                         default=-1,
                         type=int,
                         help='The partition to coalesce.')
