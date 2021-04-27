@@ -1,16 +1,16 @@
 groups:
-  - name: coalesce-production-storage
+  - name: scheduled-coalescence
     jobs:
       - storage-production-all
+      - manifests-production-equalities-all
+      - manifests-production-main-per-partition
+
+  - name: manual-coalescence
+    jobs:
       - storage-production-audit-per-partition
       - storage-production-equalities-per-partition
       - storage-production-main-per-partition
-
-  - name: coalesce-production-manifests
-    jobs:
-      - manifests-production-equalities-all
       - manifests-production-audit-per-partition
-      - manifests-production-main-per-partition
 
   - name: update-pipeline
     jobs:
