@@ -5,8 +5,6 @@ jobs:
       - in_parallel:
         - put: meta
           resource: meta-production
-        - get: utc-1am
-          trigger: true
         - get: dataworks-corporate-storage-coalescence
           trigger: false
         - get: aws-ingestion
