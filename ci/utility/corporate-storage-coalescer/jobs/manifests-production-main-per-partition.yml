@@ -177,6 +177,7 @@ jobs:
       - in_parallel:
         - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-zero ))
           task: run-coalescer-main-manifests-partition-zero
+          attempts: 3
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
@@ -184,6 +185,7 @@ jobs:
               FILE_TYPE: "manifests"
         - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-one ))
           task: run-coalescer-main-manifests-partition-one
+          attempts: 3
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
@@ -191,6 +193,7 @@ jobs:
               FILE_TYPE: "manifests"
         - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-two ))
           task: run-coalescer-main-manifests-partition-two
+          attempts: 3
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
@@ -198,6 +201,7 @@ jobs:
               FILE_TYPE: "manifests"
         - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-three ))
           task: run-coalescer-main-manifests-partition-three
+          attempts: 3
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
@@ -205,6 +209,7 @@ jobs:
               FILE_TYPE: "manifests"
         - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-four ))
           task: run-coalescer-main-manifests-partition-four
+          attempts: 3
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
@@ -212,6 +217,7 @@ jobs:
               FILE_TYPE: "manifests"
         - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-five ))
           task: run-coalescer-main-manifests-partition-five
+          attempts: 3
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
@@ -219,6 +225,7 @@ jobs:
               FILE_TYPE: "manifests"
         - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-six ))
           task: run-coalescer-main-manifests-partition-six
+          attempts: 3
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
@@ -226,6 +233,7 @@ jobs:
               FILE_TYPE: "manifests"
         - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-seven ))
           task: run-coalescer-main-manifests-partition-seven
+          attempts: 3
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
@@ -233,6 +241,7 @@ jobs:
               FILE_TYPE: "manifests"
         - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-eight ))
           task: run-coalescer-main-manifests-partition-eight
+          attempts: 3
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
@@ -240,6 +249,7 @@ jobs:
               FILE_TYPE: "manifests"
         - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-nine ))
           task: run-coalescer-main-manifests-partition-nine
+          attempts: 3
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
@@ -247,6 +257,7 @@ jobs:
               FILE_TYPE: "manifests"
         - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-ten ))
           task: run-coalescer-main-manifests-partition-ten
+          attempts: 3
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
@@ -254,6 +265,7 @@ jobs:
               FILE_TYPE: "manifests"
         - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-eleven ))
           task: run-coalescer-main-manifests-partition-eleven
+          attempts: 3
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
@@ -261,6 +273,7 @@ jobs:
               FILE_TYPE: "manifests"
         - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-twelve ))
           task: run-coalescer-main-manifests-partition-twelve
+          attempts: 3
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
@@ -268,6 +281,7 @@ jobs:
               FILE_TYPE: "manifests"
         - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-thirteen ))
           task: run-coalescer-main-manifests-partition-thirteen
+          attempts: 3
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
@@ -275,6 +289,7 @@ jobs:
               FILE_TYPE: "manifests"
         - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-fourteen ))
           task: run-coalescer-main-manifests-partition-fourteen
+          attempts: 3
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
@@ -282,6 +297,7 @@ jobs:
               FILE_TYPE: "manifests"
         - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-fifteen ))
           task: run-coalescer-main-manifests-partition-fifteen
+          attempts: 3
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
@@ -289,6 +305,7 @@ jobs:
               FILE_TYPE: "manifests"
         - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-sixteen ))
           task: run-coalescer-main-manifests-partition-sixteen
+          attempts: 3
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
@@ -296,6 +313,7 @@ jobs:
               FILE_TYPE: "manifests"
         - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-seventeen ))
           task: run-coalescer-main-manifests-partition-seventeen
+          attempts: 3
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
@@ -303,6 +321,7 @@ jobs:
               FILE_TYPE: "manifests"
         - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-eighteen ))
           task: run-coalescer-main-manifests-partition-eighteen
+          attempts: 3
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
@@ -310,6 +329,7 @@ jobs:
               FILE_TYPE: "manifests"
         - .: (( inject meta-run-coalescer-per-partition.plan.run-coalescer-partition-nineteen ))
           task: run-coalescer-main-manifests-partition-nineteen
+          attempts: 3
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
