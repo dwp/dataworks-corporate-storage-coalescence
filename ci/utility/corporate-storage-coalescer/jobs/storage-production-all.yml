@@ -34,18 +34,21 @@ jobs:
 
       - in_parallel:
         - .: (( inject meta-corporate-storage-coalescer.plan.set-coalescer-parameters-all-partitions-main ))
+          attempts: 3
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
               FILE_TYPE: "storage"
               THREAD_COUNT: 10
         - .: (( inject meta-corporate-storage-coalescer.plan.set-coalescer-parameters-all-partitions-audit ))
+          attempts: 3
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
               FILE_TYPE: "storage"
               THREAD_COUNT: 10
         - .: (( inject meta-corporate-storage-coalescer.plan.set-coalescer-parameters-all-partitions-equalities ))
+          attempts: 3
           config:
             params:
               AWS_ROLE_ARN: arn:aws:iam::((aws_account.production)):role/ci
