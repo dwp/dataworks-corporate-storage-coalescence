@@ -51,12 +51,5 @@ resources:
     webhook_token: ((dataworks.concourse_github_webhook_token))
     check_every: 720h
 
-  - name: utc-1am
-    type: time
-    source:
-      start: 1:00 AM
-      stop: 1:05 AM
-      location: UTC
-
   - name: meta-production
     type: meta

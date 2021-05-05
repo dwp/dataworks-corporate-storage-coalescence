@@ -2,6 +2,7 @@
 
 import argparse
 import traceback
+import datetime
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, wait
 from timeit import default_timer as timer
 
@@ -15,9 +16,14 @@ def main():
     client = s3_client(args.localstack)
     s3 = S3(client)
     print(f"Bucket: '{args.bucket}', prefix: '{args.prefix}', partition: {args.partition}, "
-          f"threads: {args.threads}, multiprocessor: {args.multiprocessor}, manifests: {args.manifests}.")
+          f"threads: {args.threads}, multiprocessor: {args.multiprocessor}, manifests: {args.manifests}, "
+          f"date-to-add: {args.date_to_add}.")
+
+    full_prefix = s3.get_full_s3_prefix(args.prefix, args.date_to_add, datetime.date.today())
+    print(f"Full prefix: {full_prefix}.")
+
     results = [coalesce_tranche(args, summaries) for summaries in
-               s3.object_summaries(args.bucket, args.prefix, args.summaries)]
+               s3.object_summaries(args.bucket, full_prefix, args.summaries)]
     end = timer()
     print(f"Total time taken: {end - start:.2f} seconds.")
     exit(0 if all(results) else 1)
@@ -153,6 +159,12 @@ def command_line_args():
                         default=2000000,
                         type=int,
                         help='How many s3 objects to summaries to fetch at a time.')
+
+    parser.add_argument('-d', '--date-to-add',
+                        choices=["today", "yesterday", "NOT_SET"],
+                        default="NOT_SET",
+                        type=str,
+                        help='Can be set to `today` or `yesterday` to add this to the S3 prefix (or `NOT_SET` to ignore).')
 
     return parser.parse_args()
 
