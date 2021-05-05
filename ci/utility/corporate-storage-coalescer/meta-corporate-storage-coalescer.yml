@@ -79,6 +79,7 @@ meta-corporate-storage-coalescer:
                   \"partition\": \"${PARTITION_NUMBER}\", \
                   \"threads\": \"${THREAD_COUNT}\", \
                   \"max-files\": \"${MAX_SIZE_FILES}\", \
+                  \"date-to-add\": \"NOT_SET\", \
                   \"max-size\": \"${MAX_SIZE_BYTES}\"}" > ../job-parameters/parameters.txt
               }
 
