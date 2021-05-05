@@ -5,6 +5,8 @@ from timeit import default_timer as timer
 
 import boto3
 import botocore
+import datetime
+import os
 
 
 def s3_client(use_localstack: bool):
@@ -78,6 +80,20 @@ class S3:
                 end = timer()
                 print(f"Put coalesced batch into s3 {coalesced_key}, "
                       f"size {len(coalesced_contents)}, time taken {end - start:.2f} seconds.")
+
+    def get_full_s3_prefix(self, prefix: str, date_to_add: str, today: object):
+        full_prefix = prefix
+
+        if date_to_add and date_to_add != "NOT_SET":
+            date_to_use = today
+
+            if date_to_add == "yesterday":
+                date_to_use = date_to_use - datetime.timedelta(days=1)
+
+            date_string = datetime.datetime.strftime(date_to_use, '%Y/%m/%d')
+            full_prefix = os.path.join(full_prefix, date_string)
+
+        return full_prefix
 
     def delete_batch(self, bucket: str, batch: list):
         if batch and len(batch) > 0:

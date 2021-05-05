@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime
 from functools import reduce
 from unittest.mock import Mock, MagicMock, call, ANY
 
@@ -6,6 +7,9 @@ from botocore.exceptions import ClientError
 from botocore.response import StreamingBody
 
 from utility.s3 import S3, s3_client
+
+date_format = "%Y-%m-%d"
+test_prefix = "test-prefix-1"
 
 
 class S3Spec(unittest.TestCase):
@@ -70,6 +74,66 @@ class S3Spec(unittest.TestCase):
         s3 = S3(client)
         s3.delete_batch(self.bucket, batch)
         client.delete_objects.assert_has_calls(calls)
+
+    def test_get_full_prefix_when_not_set(self):
+        prefix = test_prefix
+        expected = test_prefix
+        date_to_add = "NOT_SET"
+        today = datetime.strptime("2020-09-01", date_format)
+        client = s3_client(True)
+        s3 = S3(client)
+        actual = s3.get_full_s3_prefix(prefix, date_to_add, today)
+        self.assertEqual(expected, actual)
+
+    def test_get_full_prefix_when_not_set_with_end_slash(self):
+        prefix = f"{test_prefix}/"
+        expected = f"{test_prefix}/"
+        date_to_add = "NOT_SET"
+        today = datetime.strptime("2020-09-01", date_format)
+        client = s3_client(True)
+        s3 = S3(client)
+        actual = s3.get_full_s3_prefix(prefix, date_to_add, today)
+        self.assertEqual(expected, actual)
+
+    def test_get_full_prefix_when_set_to_today(self):
+        prefix = test_prefix
+        expected = f"{test_prefix}/2020/09/01"
+        date_to_add = "today"
+        today = datetime.strptime("2020-09-01", date_format)
+        client = s3_client(True)
+        s3 = S3(client)
+        actual = s3.get_full_s3_prefix(prefix, date_to_add, today)
+        self.assertEqual(expected, actual)
+
+    def test_get_full_prefix_when_set_to_today_with_end_slash(self):
+        prefix = f"{test_prefix}/"
+        expected = f"{test_prefix}/2020/09/01"
+        date_to_add = "today"
+        today = datetime.strptime("2020-09-01", date_format)
+        client = s3_client(True)
+        s3 = S3(client)
+        actual = s3.get_full_s3_prefix(prefix, date_to_add, today)
+        self.assertEqual(expected, actual)
+
+    def test_get_full_prefix_when_set_to_yesterday(self):
+        prefix = test_prefix
+        expected = f"{test_prefix}/2020/08/31"
+        date_to_add = "yesterday"
+        today = datetime.strptime("2020-09-01", date_format)
+        client = s3_client(True)
+        s3 = S3(client)
+        actual = s3.get_full_s3_prefix(prefix, date_to_add, today)
+        self.assertEqual(expected, actual)
+
+    def test_get_full_prefix_when_set_to_yesterday_with_end_slash(self):
+        prefix = f"{test_prefix}/"
+        expected = f"{test_prefix}/2020/08/31"
+        date_to_add = "yesterday"
+        today = datetime.strptime("2020-09-01", date_format)
+        client = s3_client(True)
+        s3 = S3(client)
+        actual = s3.get_full_s3_prefix(prefix, date_to_add, today)
+        self.assertEqual(expected, actual)
 
     def __client(self):
         objects = [self.__s3_object_with_body(i) for i in range(1000)]
