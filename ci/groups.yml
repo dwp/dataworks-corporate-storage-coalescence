@@ -12,3 +12,7 @@ groups:
     jobs:
       - mirror-dwpdigital-dataworks-corporate-storage-coalescence-dev
       - mirror-dwpdigital-dataworks-corporate-storage-coalescence
+
+  - name: update-pipeline
+    jobs:
+      - update-pipeline
