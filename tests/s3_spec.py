@@ -135,6 +135,26 @@ class S3Spec(unittest.TestCase):
         actual = s3.get_full_s3_prefix(prefix, date_to_add, today)
         self.assertEqual(expected, actual)
 
+    def test_get_full_prefix_when_set_to_specific_date_with_trailing_slash(self):
+        prefix = f"{test_prefix}/"
+        expected = f"{test_prefix}/1999/02/03"
+        date_to_add = "1999/02/03"
+        today = datetime.strptime("2020-09-01", date_format)
+        client = s3_client(True)
+        s3 = S3(client)
+        actual = s3.get_full_s3_prefix(prefix, date_to_add, today)
+        self.assertEqual(expected, actual)
+
+    def test_get_full_prefix_when_set_to_specific_date(self):
+        prefix = f"{test_prefix}"
+        expected = f"{test_prefix}/1999/02/03"
+        date_to_add = "1999/02/03"
+        today = datetime.strptime("2020-09-01", date_format)
+        client = s3_client(True)
+        s3 = S3(client)
+        actual = s3.get_full_s3_prefix(prefix, date_to_add, today)
+        self.assertEqual(expected, actual)
+
     def __client(self):
         objects = [self.__s3_object_with_body(i) for i in range(1000)]
         client = s3_client(True)

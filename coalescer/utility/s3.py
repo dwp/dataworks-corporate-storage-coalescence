@@ -83,14 +83,13 @@ class S3:
 
     def get_full_s3_prefix(self, prefix: str, date_to_add: str, today: object):
         full_prefix = prefix
-
         if date_to_add and date_to_add != "NOT_SET":
-            date_to_use = today
-
-            if date_to_add == "yesterday":
-                date_to_use = date_to_use - datetime.timedelta(days=1)
-
-            date_string = datetime.datetime.strftime(date_to_use, '%Y/%m/%d')
+            if date_to_add == "today":
+                date_string = datetime.datetime.strftime(today, '%Y/%m/%d')
+            elif date_to_add == "yesterday":
+                date_string = datetime.datetime.strftime(today - datetime.timedelta(days=1), '%Y/%m/%d')
+            else:
+                date_string = date_to_add
             full_prefix = os.path.join(full_prefix, date_string)
 
         return full_prefix

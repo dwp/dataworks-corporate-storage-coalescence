@@ -1,4 +1,5 @@
 import os
+import re
 import unittest
 from asyncio import Future
 
@@ -52,7 +53,7 @@ class GroupingSpec(unittest.TestCase):
     def test_grouping_all_partitions(self):
         object_summaries = self.__summaries()
         result = grouped_object_summaries(object_summaries, None, False)
-        self.assertEqual(["db.database.collection1", "db.database.collection2"], list(result.keys()))
+        self.assertEqual(["db.hyphenated-database.collection1", "db.database.collection2"], list(result.keys()))
         for topic in list(result.keys()):
             partition_batch = result[topic]
             self.assertEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], list(partition_batch.keys()))
@@ -61,7 +62,7 @@ class GroupingSpec(unittest.TestCase):
     def test_grouping_one_partition(self):
         object_summaries = self.__summaries()
         result = grouped_object_summaries(object_summaries, 5, False)
-        self.assertEqual(["db.database.collection1", "db.database.collection2"], list(result.keys()))
+        self.assertEqual(["db.hyphenated-database.collection1", "db.database.collection2"], list(result.keys()))
         for topic in list(result.keys()):
             partition_batch = result[topic]
             self.assertEqual([5], list(partition_batch.keys()))
@@ -69,6 +70,7 @@ class GroupingSpec(unittest.TestCase):
 
     def test_grouping_manifest_summaries_partition_zero(self):
         object_summaries = self.__manifest_summaries()
+        print(object_summaries)
         result = grouped_object_summaries(object_summaries, 0, True)
         self.assertEqual(["manifests"], list(result.keys()))
         for topic in list(result.keys()):
@@ -86,15 +88,16 @@ class GroupingSpec(unittest.TestCase):
                 self.assertEqual(partition, item['partition'])
                 start_offset = item['start_offset']
                 end_offset = item['end_offset']
-                collection = topic.replace("db.database.", "")
+                collection = re.sub(r"db\.[-\w]+\.", "", topic)   #topic.replace("db.database.", "")
                 if manifests:
                     self.assertEqual(
                         f"business-data/manifest/streaming/main/"
                         f"{item['start_topic']}_{partition}_{start_offset}-{item['end_topic']}_{partition}_{end_offset}.txt",
                         item['object_key'])
                 else:
+                    database = "hyphenated-database" if collection == "collection1" else "database"
                     self.assertEqual(
-                        f"corporate_storage/ucfs_audit/2020/11/05/database/{collection}/"
+                        f"corporate_storage/ucfs_audit/2020/11/05/{database}/{collection}/"
                         f"{topic}_{partition}_{start_offset}-{end_offset}.jsonl.gz",
                         item['object_key'])
 
@@ -103,12 +106,12 @@ class GroupingSpec(unittest.TestCase):
         for collection in ["collection1", "collection2"]:
             for partition in range(10):
                 for i in range(100):
-                    object_summaries.append(self.__object_summary(collection, partition, i))
+                    object_summaries.append(self.__object_summary(collection, partition, i, "hyphenated-database" if collection == "collection1" else "database"))
         return object_summaries
 
     def __manifest_summaries(self):
         object_summaries = []
-        for database in ["database1", "database2"]:
+        for database in ["database1", "database2", "hyphenated-database"]:
             for collection in ["collection1", "collection2"]:
                 for partition in range(10):
                     for i in range(100):
@@ -116,10 +119,10 @@ class GroupingSpec(unittest.TestCase):
         return object_summaries
 
     @staticmethod
-    def __object_summary(collection: str, partition: int, i: int) -> dict:
+    def __object_summary(collection: str, partition: int, i: int, database: str = 'database') -> dict:
         return {
-            "Key": f"corporate_storage/ucfs_audit/2020/11/05/database/{collection}/"
-                   f"db.database.{collection}_{partition}_{i * 100}-{i * 100 + 99}.jsonl.gz",
+            "Key": f"corporate_storage/ucfs_audit/2020/11/05/{database}/{collection}/"
+                   f"db.{database}.{collection}_{partition}_{i * 100}-{i * 100 + 99}.jsonl.gz",
             "Size": 100
         }
 
