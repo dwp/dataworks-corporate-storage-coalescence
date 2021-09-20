@@ -161,10 +161,9 @@ def command_line_args():
                         help='How many s3 objects to summaries to fetch at a time.')
 
     parser.add_argument('-d', '--date-to-add',
-                        choices=["today", "yesterday", "NOT_SET"],
                         default="NOT_SET",
                         type=str,
-                        help='Can be set to `today` or `yesterday` to add this to the S3 prefix (or `NOT_SET` to ignore).')
+                        help='Can be set to `today` or `yesterday` or a date e.g. yyyy/MM/dd to add this to the S3 prefix (or `NOT_SET` to ignore).')
 
     return parser.parse_args()
 

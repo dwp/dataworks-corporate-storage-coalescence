@@ -49,8 +49,8 @@ def grouped_object_summaries(summaries: list, partition_number: Optional[int], m
 
 
 def filename_pattern(partition: Optional[int]) -> str:
-    return r"/([.\w]+)_(\d+)_(\d+)-(\d+)\.jsonl\.gz$" if partition is None or partition < 0 \
-        else r"/([.\w]+)_" + f"({partition})" + r"_(\d+)-(\d+)\.jsonl\.gz$"
+    return r"/([-.\w]+)_(\d+)_(\d+)-(\d+)\.jsonl\.gz$" if partition is None or partition < 0 \
+        else r"/([-.\w]+)_" + f"({partition})" + r"_(\d+)-(\d+)\.jsonl\.gz$"
 
 
 def manifest_filename_pattern(partition: Optional[int]) -> str:
