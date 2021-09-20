@@ -130,7 +130,7 @@ class S3:
             except:
                 print(f"Failed to fetch object '{future.exception()}', {future}")
 
-        filename_re = re.compile(r"/[.\w]+_\d+_(\d+)-\d+\.jsonl\.gz$")
+        filename_re = re.compile(r"/[-.\w]+_\d+_(\d+)-\d+\.jsonl\.gz$")
 
         sorted_contents = [xs[1] for xs in results] if manifests \
             else [xs[1] for xs in sorted(results, key=lambda x: int(filename_re.findall(x[0])[0]))]
