@@ -43,7 +43,7 @@ coalescer:
 	docker-compose up coalescer
 
 unit-tests:
-	tox tests/*.py
+	tox -c tests/*.py
 
 integration-tests: services coalescer
 	docker-compose up integration-tests
