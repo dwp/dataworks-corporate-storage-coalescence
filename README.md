@@ -1,3 +1,5 @@
+# DO NOT USE THIS REPO - MIGRATED TO GITLAB
+
 # dataworks-corporate-storage-coalescence
 
 ## Coalesces corporate storage files into larger objects
